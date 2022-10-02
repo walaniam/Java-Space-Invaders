@@ -1,8 +1,8 @@
 package com.zetcode;
 
 import com.zetcode.sprite.Alien;
-import com.zetcode.sprite.Player;
-import com.zetcode.sprite.Shot;
+import lombok.RequiredArgsConstructor;
+import walaniam.spaceinvaders.GameModel;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 
@@ -12,17 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 
 public class Board extends JPanel {
 
+    private final GameModel model;
     private Dimension dimension;
-    private List<Alien> aliens;
-    private Player player;
-    private Shot shot;
 
     private int direction = -1;
     private int deaths = 0;
@@ -32,79 +28,20 @@ public class Board extends JPanel {
 
     private Timer timer;
 
-
     public Board() {
-
-        initBoard();
-        gameInit();
+        this.model = new GameModel();
+        initBoard(model);
     }
 
-    private void initBoard() {
+    private void initBoard(GameModel model) {
 
-        addKeyListener(new TAdapter());
+        addKeyListener(new TAdapter(model));
         setFocusable(true);
         dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
         setBackground(Color.black);
 
         timer = new Timer(Commons.DELAY, new GameCycle());
         timer.start();
-
-        gameInit();
-    }
-
-
-    private void gameInit() {
-
-        aliens = new ArrayList<>();
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 6; j++) {
-                var alien = new Alien(
-                        Commons.ALIEN_INIT_X + 18 * j,
-                        Commons.ALIEN_INIT_Y + 18 * i
-                );
-                aliens.add(alien);
-            }
-        }
-
-        player = new Player();
-        shot = new Shot();
-    }
-
-    private void drawAliens(Graphics g) {
-        aliens.forEach(alien -> {
-            if (alien.isVisible()) {
-                g.drawImage(alien.getImage(), alien.getX(), alien.getY(), this);
-            }
-            if (alien.isDying()) {
-                alien.die();
-            }
-        });
-    }
-
-    private void drawPlayer(Graphics g) {
-        if (player.isVisible()) {
-            g.drawImage(player.getImage(), player.getX(), player.getY(), this);
-        }
-        if (player.isDying()) {
-            player.die();
-            inGame = false;
-        }
-    }
-
-    private void drawShot(Graphics g) {
-        if (shot.isVisible()) {
-            g.drawImage(shot.getImage(), shot.getX(), shot.getY(), this);
-        }
-    }
-
-    private void drawBombing(Graphics g) {
-        aliens.forEach(alien -> {
-            var b = alien.getBomb();
-            if (b.isVisible()) {
-                g.drawImage(b.getImage(), b.getX(), b.getY(), this);
-            }
-        });
     }
 
     @Override
@@ -120,20 +57,12 @@ public class Board extends JPanel {
         g.setColor(Color.green);
 
         if (inGame) {
-
             g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
-
-            drawAliens(g);
-            drawPlayer(g);
-            drawShot(g);
-            drawBombing(g);
-
+            inGame = model.drawAll(g, this);
         } else {
-
             if (timer.isRunning()) {
                 timer.stop();
             }
-
             gameOver(g);
         }
 
@@ -166,6 +95,9 @@ public class Board extends JPanel {
             timer.stop();
             message = "Game won!";
         }
+
+        var player = model.getPlayer();
+        var aliens = model.getAliens();
 
         // player
         player.act();
@@ -268,6 +200,9 @@ public class Board extends JPanel {
 
     private void updateShot() {
 
+        var shot = model.getShot();
+        var aliens = model.getAliens();
+
         if (!shot.isVisible()) {
             return;
         }
@@ -307,31 +242,27 @@ public class Board extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             update();
-            repaint();
+            Board.this.repaint();
         }
     }
 
+    @RequiredArgsConstructor
     private class TAdapter extends KeyAdapter {
+
+        private final GameModel model;
 
         @Override
         public void keyReleased(KeyEvent e) {
-            player.keyReleased(e);
+            model.getPlayer().keyReleased(e);
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
-
-            player.keyPressed(e);
-
-            int x = player.getX();
-            int y = player.getY();
-
             int key = e.getKeyCode();
-
+            var player = model.getPlayer();
+            player.keyPressed(e);
             if (key == KeyEvent.VK_SPACE && inGame) {
-                if (!shot.isVisible()) {
-                    shot = new Shot(x, y);
-                }
+                model.shotFired();
             }
         }
     }

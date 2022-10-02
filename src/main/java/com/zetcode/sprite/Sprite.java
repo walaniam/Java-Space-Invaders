@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.awt.*;
+import java.awt.image.ImageObserver;
 
 @Getter
 @Setter
@@ -27,5 +28,11 @@ public abstract class Sprite {
 
     public void die() {
         visible = false;
+    }
+
+    public void draw(Graphics g, ImageObserver observer) {
+        if (visible) {
+            g.drawImage(getImage(), x, y, observer);
+        }
     }
 }
