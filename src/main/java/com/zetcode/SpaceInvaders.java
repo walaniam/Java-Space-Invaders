@@ -1,16 +1,11 @@
 package com.zetcode;
 
-import java.awt.EventQueue;
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.*;
 
 public class SpaceInvaders extends JFrame  {
 
     public SpaceInvaders() {
-
-        initUI();
-    }
-
-    private void initUI() {
 
         add(new Board());
 
@@ -23,11 +18,9 @@ public class SpaceInvaders extends JFrame  {
     }
 
     public static void main(String[] args) {
-
         EventQueue.invokeLater(() -> {
-
-            var ex = new SpaceInvaders();
-            ex.setVisible(true);
+            var frame = new SpaceInvaders();
+            frame.setVisible(true);
         });
     }
 }

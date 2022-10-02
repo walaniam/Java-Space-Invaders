@@ -1,21 +1,14 @@
 package com.zetcode.sprite;
 
+import lombok.NoArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
 
 import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
+@NoArgsConstructor
 public class Shot extends Sprite {
 
-    public Shot() {
-    }
-
     public Shot(int x, int y) {
-
-        initShot(x, y);
-    }
-
-    private void initShot(int x, int y) {
-
         setImage(loadImage(ImageResource.SHOT));
 
         int H_SPACE = 6;

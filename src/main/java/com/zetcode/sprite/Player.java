@@ -10,25 +10,18 @@ import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Player extends Sprite {
 
-    private int width;
+    private final int width;
 
     public Player() {
-
-        initPlayer();
-    }
-
-    private void initPlayer() {
-
         Image playerImage = loadImage(ImageResource.PLAYER);
-
         width = playerImage.getWidth(null);
         setImage(playerImage);
 
-        int START_X = 270;
-        setX(START_X);
+        int startX = 270;
+        setX(startX);
 
-        int START_Y = 280;
-        setY(START_Y);
+        int startY = 280;
+        setY(startY);
     }
 
     public void act() {
@@ -36,12 +29,10 @@ public class Player extends Sprite {
         x += dx;
 
         if (x <= 2) {
-
             x = 2;
         }
 
         if (x >= Commons.BOARD_WIDTH - 2 * width) {
-
             x = Commons.BOARD_WIDTH - 2 * width;
         }
     }
@@ -51,12 +42,10 @@ public class Player extends Sprite {
         int key = e.getKeyCode();
 
         if (key == KeyEvent.VK_LEFT) {
-
             dx = -2;
         }
 
         if (key == KeyEvent.VK_RIGHT) {
-
             dx = 2;
         }
     }
@@ -66,12 +55,10 @@ public class Player extends Sprite {
         int key = e.getKeyCode();
 
         if (key == KeyEvent.VK_LEFT) {
-
             dx = 0;
         }
 
         if (key == KeyEvent.VK_RIGHT) {
-
             dx = 0;
         }
     }

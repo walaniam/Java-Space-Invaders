@@ -20,11 +20,11 @@ import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Board extends JPanel {
 
-    private Dimension d;
+    private Dimension dimension;
     private List<Alien> aliens;
     private Player player;
     private Shot shot;
-    
+
     private int direction = -1;
     private int deaths = 0;
 
@@ -44,7 +44,7 @@ public class Board extends JPanel {
 
         addKeyListener(new TAdapter());
         setFocusable(true);
-        d = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
+        dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
         setBackground(Color.black);
 
         timer = new Timer(Commons.DELAY, new GameCycle());
@@ -60,9 +60,10 @@ public class Board extends JPanel {
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 6; j++) {
-
-                var alien = new Alien(Commons.ALIEN_INIT_X + 18 * j,
-                        Commons.ALIEN_INIT_Y + 18 * i);
+                var alien = new Alien(
+                        Commons.ALIEN_INIT_X + 18 * j,
+                        Commons.ALIEN_INIT_Y + 18 * i
+                );
                 aliens.add(alien);
             }
         }
@@ -72,73 +73,56 @@ public class Board extends JPanel {
     }
 
     private void drawAliens(Graphics g) {
-
-        for (Alien alien : aliens) {
-
+        aliens.forEach(alien -> {
             if (alien.isVisible()) {
-
                 g.drawImage(alien.getImage(), alien.getX(), alien.getY(), this);
             }
-
             if (alien.isDying()) {
-
                 alien.die();
             }
-        }
+        });
     }
 
     private void drawPlayer(Graphics g) {
-
         if (player.isVisible()) {
-
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
-
         if (player.isDying()) {
-
             player.die();
             inGame = false;
         }
     }
 
     private void drawShot(Graphics g) {
-
         if (shot.isVisible()) {
-
             g.drawImage(shot.getImage(), shot.getX(), shot.getY(), this);
         }
     }
 
     private void drawBombing(Graphics g) {
-
-        for (Alien a : aliens) {
-
-            Alien.Bomb b = a.getBomb();
-
+        aliens.forEach(alien -> {
+            var b = alien.getBomb();
             if (!b.isDestroyed()) {
-
                 g.drawImage(b.getImage(), b.getX(), b.getY(), this);
             }
-        }
+        });
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         doDrawing(g);
     }
 
     private void doDrawing(Graphics g) {
 
         g.setColor(Color.black);
-        g.fillRect(0, 0, d.width, d.height);
+        g.fillRect(0, 0, dimension.width, dimension.height);
         g.setColor(Color.green);
 
         if (inGame) {
 
-            g.drawLine(0, Commons.GROUND,
-                    Commons.BOARD_WIDTH, Commons.GROUND);
+            g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
 
             drawAliens(g);
             drawPlayer(g);
@@ -179,7 +163,6 @@ public class Board extends JPanel {
     private void update() {
 
         if (deaths == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
-
             inGame = false;
             timer.stop();
             message = "Game won!";
@@ -189,40 +172,7 @@ public class Board extends JPanel {
         player.act();
 
         // shot
-        if (shot.isVisible()) {
-
-            int shotX = shot.getX();
-            int shotY = shot.getY();
-
-            for (Alien alien : aliens) {
-
-                int alienX = alien.getX();
-                int alienY = alien.getY();
-
-                if (alien.isVisible() && shot.isVisible()) {
-                    if (shotX >= (alienX)
-                            && shotX <= (alienX + Commons.ALIEN_WIDTH)
-                            && shotY >= (alienY)
-                            && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
-
-                        Image explosionImg = loadImage(ImageResource.EXPLOSION);
-                        alien.setImage(explosionImg);
-                        alien.setDying(true);
-                        deaths++;
-                        shot.die();
-                    }
-                }
-            }
-
-            int y = shot.getY();
-            y -= 4;
-
-            if (y < 0) {
-                shot.die();
-            } else {
-                shot.setY(y);
-            }
-        }
+        updateShot();
 
         // aliens
 
@@ -321,18 +271,48 @@ public class Board extends JPanel {
         }
     }
 
-    private void doGameCycle() {
+    private void updateShot() {
 
-        update();
-        repaint();
+        if (!shot.isVisible()) {
+            return;
+        }
+
+        int shotX = shot.getX();
+        int shotY = shot.getY();
+
+        aliens.stream()
+                .filter(alien -> alien.isVisible() && shot.isVisible())
+                .forEach(alien -> {
+                    int alienX = alien.getX();
+                    int alienY = alien.getY();
+                    if (shotX >= alienX
+                            && shotX <= (alienX + Commons.ALIEN_WIDTH)
+                            && shotY >= alienY
+                            && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
+
+                        Image explosionImg = loadImage(ImageResource.EXPLOSION);
+                        alien.setImage(explosionImg);
+                        alien.setDying(true);
+                        deaths++;
+                        shot.die();
+                    }
+                });
+
+        int y = shot.getY();
+        y -= 4;
+
+        if (y < 0) {
+            shot.die();
+        } else {
+            shot.setY(y);
+        }
     }
 
     private class GameCycle implements ActionListener {
-
         @Override
         public void actionPerformed(ActionEvent e) {
-
-            doGameCycle();
+            update();
+            repaint();
         }
     }
 
@@ -340,7 +320,6 @@ public class Board extends JPanel {
 
         @Override
         public void keyReleased(KeyEvent e) {
-
             player.keyReleased(e);
         }
 
@@ -354,14 +333,9 @@ public class Board extends JPanel {
 
             int key = e.getKeyCode();
 
-            if (key == KeyEvent.VK_SPACE) {
-
-                if (inGame) {
-
-                    if (!shot.isVisible()) {
-
-                        shot = new Shot(x, y);
-                    }
+            if (key == KeyEvent.VK_SPACE && inGame) {
+                if (!shot.isVisible()) {
+                    shot = new Shot(x, y);
                 }
             }
         }
