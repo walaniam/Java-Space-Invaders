@@ -1,9 +1,12 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
+import walaniam.spaceinvaders.ImageResource;
 
-import javax.swing.ImageIcon;
+import java.awt.*;
 import java.awt.event.KeyEvent;
+
+import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Player extends Sprite {
 
@@ -16,11 +19,10 @@ public class Player extends Sprite {
 
     private void initPlayer() {
 
-        var playerImg = "src/images/player.png";
-        var ii = new ImageIcon(playerImg);
+        Image playerImage = loadImage(ImageResource.PLAYER);
 
-        width = ii.getImage().getWidth(null);
-        setImage(ii.getImage());
+        width = playerImage.getWidth(null);
+        setImage(playerImage);
 
         int START_X = 270;
         setX(START_X);
