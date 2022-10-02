@@ -1,11 +1,13 @@
 package walaniam.spaceinvaders;
 
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.net.URL;
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@ToString
 public enum ImageResource {
 
     ALIEN("/images/alien.png"),

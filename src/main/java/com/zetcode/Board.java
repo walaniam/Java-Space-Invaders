@@ -3,6 +3,7 @@ package com.zetcode;
 import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Shot;
+import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 
 import javax.swing.*;
@@ -15,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Board extends JPanel {
 
@@ -102,7 +101,7 @@ public class Board extends JPanel {
     private void drawBombing(Graphics g) {
         aliens.forEach(alien -> {
             var b = alien.getBomb();
-            if (!b.isDestroyed()) {
+            if (b.isVisible()) {
                 g.drawImage(b.getImage(), b.getX(), b.getY(), this);
             }
         });
@@ -234,9 +233,8 @@ public class Board extends JPanel {
             int shot = generator.nextInt(15);
             Alien.Bomb bomb = alien.getBomb();
 
-            if (shot == Commons.CHANCE && alien.isVisible() && bomb.isDestroyed()) {
-
-                bomb.setDestroyed(false);
+            if (shot == Commons.CHANCE && alien.isVisible() && !bomb.isVisible()) {
+                bomb.setVisible(true);
                 bomb.setX(alien.getX());
                 bomb.setY(alien.getY());
             }
@@ -246,26 +244,23 @@ public class Board extends JPanel {
             int playerX = player.getX();
             int playerY = player.getY();
 
-            if (player.isVisible() && !bomb.isDestroyed()) {
+            if (player.isVisible() && bomb.isVisible()) {
 
                 if (bombX >= (playerX)
                         && bombX <= (playerX + Commons.PLAYER_WIDTH)
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    player.setImage(loadImage(ImageResource.EXPLOSION));
+                    player.setImage(ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION));
                     player.setDying(true);
-                    bomb.setDestroyed(true);
+                    bomb.setVisible(false);
                 }
             }
 
-            if (!bomb.isDestroyed()) {
-
+            if (bomb.isVisible()) {
                 bomb.setY(bomb.getY() + 1);
-
                 if (bomb.getY() >= Commons.GROUND - Commons.BOMB_HEIGHT) {
-
-                    bomb.setDestroyed(true);
+                    bomb.setVisible(false);
                 }
             }
         }
@@ -290,7 +285,7 @@ public class Board extends JPanel {
                             && shotY >= alienY
                             && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
 
-                        Image explosionImg = loadImage(ImageResource.EXPLOSION);
+                        Image explosionImg = ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION);
                         alien.setImage(explosionImg);
                         alien.setDying(true);
                         deaths++;
