@@ -3,15 +3,10 @@ package com.zetcode;
 import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Shot;
+import walaniam.spaceinvaders.ImageResource;
 
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -20,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Board extends JPanel {
 
@@ -32,7 +29,6 @@ public class Board extends JPanel {
     private int deaths = 0;
 
     private boolean inGame = true;
-    private String explImg = "src/images/explosion.png";
     private String message = "Game Over";
 
     private Timer timer;
@@ -209,8 +205,8 @@ public class Board extends JPanel {
                             && shotY >= (alienY)
                             && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
 
-                        var ii = new ImageIcon(explImg);
-                        alien.setImage(ii.getImage());
+                        Image explosionImg = loadImage(ImageResource.EXPLOSION);
+                        alien.setImage(explosionImg);
                         alien.setDying(true);
                         deaths++;
                         shot.die();
@@ -307,8 +303,7 @@ public class Board extends JPanel {
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    var ii = new ImageIcon(explImg);
-                    player.setImage(ii.getImage());
+                    player.setImage(loadImage(ImageResource.EXPLOSION));
                     player.setDying(true);
                     bomb.setDestroyed(true);
                 }

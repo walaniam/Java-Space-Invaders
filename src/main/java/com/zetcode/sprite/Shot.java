@@ -1,6 +1,8 @@
 package com.zetcode.sprite;
 
-import javax.swing.ImageIcon;
+import walaniam.spaceinvaders.ImageResource;
+
+import static walaniam.spaceinvaders.ImageUtils.loadImage;
 
 public class Shot extends Sprite {
 
@@ -14,9 +16,7 @@ public class Shot extends Sprite {
 
     private void initShot(int x, int y) {
 
-        var shotImg = "src/images/shot.png";
-        var ii = new ImageIcon(shotImg);
-        setImage(ii.getImage());
+        setImage(loadImage(ImageResource.SHOT));
 
         int H_SPACE = 6;
         setX(x + H_SPACE);
