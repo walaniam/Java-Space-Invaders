@@ -50,6 +50,7 @@ public class Board extends JPanel {
         if (model.isInGame()) {
             g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
             model.drawAll(g, this);
+            printState(g);
         } else {
             if (timer.isRunning()) {
                 timer.stop();
@@ -58,6 +59,10 @@ public class Board extends JPanel {
         }
 
         Toolkit.getDefaultToolkit().sync();
+    }
+
+    private void printState(Graphics g) {
+        // TODO
     }
 
     private void gameOver(Graphics g) {

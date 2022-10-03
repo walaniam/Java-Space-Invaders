@@ -2,33 +2,43 @@ package com.zetcode.sprite;
 
 import com.zetcode.Commons;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
 import java.awt.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.Collections.emptyList;
 
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Shot extends Sprite {
 
     private static final int H_SPACE = 6;
     private static final int V_SPACE = 1;
 
-    private GameState state;
-    private List<Alien> aliens = emptyList();
+    private final GameState state;
+    private final List<Alien> aliens;
+    private int fireRangeLeftX = 0;
+    private int fireRangeRightX = Commons.ALIEN_WIDTH;
+    private int fireRangeY = Commons.ALIEN_HEIGHT;
 
-    static Shot ofPlayerPosition(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot();
+    static Shot regularShot(GameState state, List<Alien> aliens, int x, int y) {
+        var shot = new Shot(state, aliens);
         shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SHOT));
         shot.setX(x + H_SPACE);
         shot.setY(y - V_SPACE);
-        shot.state = state;
-        shot.aliens = aliens;
+        return shot;
+    }
+
+    static Shot superShot(GameState state, List<Alien> aliens, int x, int y) {
+        var shot = new Shot(state, aliens);
+        shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SUPER_SHOT));
+        shot.setX(x + 2);
+        shot.setY(y - 12);
+        shot.fireRangeLeftX = Commons.ALIEN_WIDTH * 2;
+        shot.fireRangeRightX = Commons.ALIEN_WIDTH * 2;
         return shot;
     }
 
@@ -38,23 +48,26 @@ public class Shot extends Sprite {
             return;
         }
 
+        var hit = new AtomicBoolean();
         aliens.stream()
                 .filter(alien -> alien.isVisible() && isVisible())
                 .forEach(alien -> {
                     int alienX = alien.getX();
                     int alienY = alien.getY();
-                    if (x >= alienX
-                            && x <= (alienX + Commons.ALIEN_WIDTH)
-                            && y >= alienY
-                            && y <= (alienY + Commons.ALIEN_HEIGHT)) {
+                    if (x >= (alienX - fireRangeLeftX) && x <= (alienX + fireRangeRightX)
+                            && y >= alienY && y <= (alienY + fireRangeY)) {
 
                         Image explosionImg = ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION);
                         alien.setImage(explosionImg);
                         alien.setDying(true);
                         state.plusDeath();
-                        die();
+                        hit.set(true);
                     }
                 });
+
+        if (hit.get()) {
+            die();
+        }
 
         updatePosition();
     }

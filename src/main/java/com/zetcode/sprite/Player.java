@@ -21,7 +21,7 @@ public class Player extends Sprite {
     private final List<Alien> aliens;
     private final int width;
     private Shot shot;
-    private SuperShot superShot;
+    private Shot superShot;
     private int superShotsAvailable = 5;
 
     public Player(GameState state, List<Alien> aliens) {
@@ -89,14 +89,14 @@ public class Player extends Sprite {
 
     private void shotFired() {
         if (state.isInGame() && (shot == null || !shot.isVisible())) {
-            shot = Shot.ofPlayerPosition(state, aliens, x, y);
+            shot = Shot.regularShot(state, aliens, x, y);
         }
     }
 
     private void superShotFired() {
         if (state.isInGame() && (superShot == null || !superShot.isVisible() && superShotsAvailable > 0)) {
             superShotsAvailable--;
-            superShot = SuperShot.ofPlayerPosition(state, aliens, x, y);
+            superShot = Shot.superShot(state, aliens, x, y);
         }
     }
 }
