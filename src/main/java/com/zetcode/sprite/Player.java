@@ -21,6 +21,9 @@ public class Player extends Sprite {
     private final int width;
     @Getter
     private Shot shot;
+    @Getter
+    private SuperShot superShot;
+    private int superShotsAvailable = 5;
 
     public Player(GameState state) {
         this.state = state;
@@ -29,7 +32,8 @@ public class Player extends Sprite {
         setImage(playerImage);
         setX(START_X);
         setY(START_Y);
-        this.shot = new Shot();
+        this.shot = Shot.nonVisible();
+        this.superShot = SuperShot.nonVisible();
     }
 
     @Override
@@ -41,6 +45,7 @@ public class Player extends Sprite {
             state.setInGame(false);
         }
         shot.draw(g, observer);
+        superShot.draw(g, observer);
     }
 
     public void act() {
@@ -58,6 +63,7 @@ public class Player extends Sprite {
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;
             case KeyEvent.VK_RIGHT -> dx = 2;
+            case KeyEvent.VK_B -> superShotFired();
             case KeyEvent.VK_SPACE -> shotFired();
         }
     }
@@ -71,7 +77,14 @@ public class Player extends Sprite {
 
     private void shotFired() {
         if (!shot.isVisible() && state.isInGame()) {
-            shot = new Shot(x, y);
+            shot = Shot.ofPlayerPosition(x, y);
+        }
+    }
+
+    private void superShotFired() {
+        if (!superShot.isVisible() && state.isInGame() && superShotsAvailable > 0) {
+            superShotsAvailable--;
+            superShot = SuperShot.ofPlayerPosition(x, y);
         }
     }
 }
