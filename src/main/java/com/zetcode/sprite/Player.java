@@ -1,15 +1,15 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import walaniam.spaceinvaders.GameState;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameState;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
+import java.util.List;
 
 @Slf4j
 public class Player extends Sprite {
@@ -18,18 +18,20 @@ public class Player extends Sprite {
     private static final int START_Y = 280;
 
     private final GameState state;
+    private final List<Alien> aliens;
     private final int width;
-    @Getter
     private Shot shot;
+    private Shot superShot;
+    private int superShotsAvailable = 5;
 
-    public Player(GameState state) {
+    public Player(GameState state, List<Alien> aliens) {
         this.state = state;
+        this.aliens = aliens;
         Image playerImage = ImageRepository.INSTANCE.getImage(ImageResource.PLAYER);
         this.width = playerImage.getWidth(null);
         setImage(playerImage);
         setX(START_X);
         setY(START_Y);
-        this.shot = new Shot();
     }
 
     @Override
@@ -40,7 +42,22 @@ public class Player extends Sprite {
             die();
             state.setInGame(false);
         }
-        shot.draw(g, observer);
+        if (shot != null) {
+            shot.draw(g, observer);
+        }
+        if (superShot != null) {
+            superShot.draw(g, observer);
+        }
+    }
+
+    @Override
+    public void update() {
+        if (shot != null) {
+            shot.update();
+        }
+        if (superShot != null) {
+            superShot.update();
+        }
     }
 
     public void act() {
@@ -58,6 +75,7 @@ public class Player extends Sprite {
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;
             case KeyEvent.VK_RIGHT -> dx = 2;
+            case KeyEvent.VK_B -> superShotFired();
             case KeyEvent.VK_SPACE -> shotFired();
         }
     }
@@ -70,8 +88,15 @@ public class Player extends Sprite {
     }
 
     private void shotFired() {
-        if (!shot.isVisible() && state.isInGame()) {
-            shot = new Shot(x, y);
+        if (state.isInGame() && (shot == null || !shot.isVisible())) {
+            shot = Shot.regularShot(state, aliens, x, y);
+        }
+    }
+
+    private void superShotFired() {
+        if (state.isInGame() && (superShot == null || !superShot.isVisible() && superShotsAvailable > 0)) {
+            superShotsAvailable--;
+            superShot = Shot.superShot(state, aliens, x, y);
         }
     }
 }

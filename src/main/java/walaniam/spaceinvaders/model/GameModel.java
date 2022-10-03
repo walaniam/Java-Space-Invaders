@@ -1,4 +1,4 @@
-package walaniam.spaceinvaders;
+package walaniam.spaceinvaders.model;
 
 import com.zetcode.Commons;
 import com.zetcode.sprite.Alien;
@@ -9,20 +9,21 @@ import lombok.Getter;
 import java.awt.*;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.zetcode.Commons.*;
+import static java.util.Collections.unmodifiableList;
 
 @Getter
-public class GameModel {
+public class GameModel implements GameState {
 
+    private final GameState state = new InternalState();
     private final List<Alien> aliens;
     private final Player player;
 
-    public GameModel(GameState state) {
-        this.aliens = Collections.unmodifiableList(newAliens());
-        this.player = new Player(state);
+    public GameModel() {
+        this.aliens = unmodifiableList(newAliens());
+        this.player = new Player(state, aliens);
     }
 
     public void drawAll(Graphics g, ImageObserver observer) {
@@ -39,9 +40,7 @@ public class GameModel {
     }
 
     private List<Alien> newAliens() {
-
         var aliens = new ArrayList<Alien>(NUMBER_OF_ALIENS_TO_DESTROY);
-
         for (int i = 0; i < ALIENS_ROWS; i++) {
             for (int j = 0; j < ALIENS_COLUMNS; j++) {
                 var alien = new Alien(
@@ -51,7 +50,26 @@ public class GameModel {
                 aliens.add(alien);
             }
         }
-
         return aliens;
+    }
+
+    @Override
+    public void setInGame(boolean inGame) {
+        state.setInGame(inGame);
+    }
+
+    @Override
+    public boolean isInGame() {
+        return state.isInGame();
+    }
+
+    @Override
+    public int getDeaths() {
+        return state.getDeaths();
+    }
+
+    @Override
+    public void plusDeath() {
+        state.plusDeath();
     }
 }
