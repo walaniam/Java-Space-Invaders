@@ -1,16 +1,16 @@
 package com.zetcode;
 
-import java.awt.EventQueue;
-import javax.swing.JFrame;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+@Slf4j
 public class SpaceInvaders extends JFrame  {
 
     public SpaceInvaders() {
-
-        initUI();
-    }
-
-    private void initUI() {
 
         add(new Board());
 
@@ -23,11 +23,10 @@ public class SpaceInvaders extends JFrame  {
     }
 
     public static void main(String[] args) {
-
+        log.info("Starting game with params: {}", Arrays.stream(args).collect(Collectors.joining(", ")));
         EventQueue.invokeLater(() -> {
-
-            var ex = new SpaceInvaders();
-            ex.setVisible(true);
+            var frame = new SpaceInvaders();
+            frame.setVisible(true);
         });
     }
 }

@@ -1,65 +1,43 @@
 package com.zetcode.sprite;
 
+import lombok.Getter;
+import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 
-import static walaniam.spaceinvaders.ImageUtils.loadImage;
+import java.awt.*;
+import java.awt.image.ImageObserver;
 
+@Getter
 public class Alien extends Sprite {
 
-    private Bomb bomb;
+    private final Bomb bomb;
 
     public Alien(int x, int y) {
-
-        initAlien(x, y);
-    }
-
-    private void initAlien(int x, int y) {
-
         this.x = x;
         this.y = y;
-
-        bomb = new Bomb(x, y);
-
-        setImage(loadImage(ImageResource.ALIEN));
+        this.bomb = new Bomb(x, y);
+        setImage(ImageRepository.INSTANCE.getImage(ImageResource.ALIEN));
     }
 
     public void act(int direction) {
-
         this.x += direction;
     }
 
-    public Bomb getBomb() {
-
-        return bomb;
+    @Override
+    public void draw(Graphics g, ImageObserver observer) {
+        super.draw(g, observer);
+        if (isDying()) {
+            die();
+        }
     }
 
     public class Bomb extends Sprite {
 
-        private boolean destroyed;
-
         public Bomb(int x, int y) {
-
-            initBomb(x, y);
-        }
-
-        private void initBomb(int x, int y) {
-
-            setDestroyed(true);
-
+            super(false);
             this.x = x;
             this.y = y;
-
-            setImage(loadImage(ImageResource.BOMB));
-        }
-
-        public void setDestroyed(boolean destroyed) {
-
-            this.destroyed = destroyed;
-        }
-
-        public boolean isDestroyed() {
-
-            return destroyed;
+            setImage(ImageRepository.INSTANCE.getImage(ImageResource.BOMB));
         }
     }
 }
