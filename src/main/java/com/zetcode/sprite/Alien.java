@@ -4,6 +4,9 @@ import lombok.Getter;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 
+import java.awt.*;
+import java.awt.image.ImageObserver;
+
 @Getter
 public class Alien extends Sprite {
 
@@ -18,6 +21,14 @@ public class Alien extends Sprite {
 
     public void act(int direction) {
         this.x += direction;
+    }
+
+    @Override
+    public void draw(Graphics g, ImageObserver observer) {
+        super.draw(g, observer);
+        if (isDying()) {
+            die();
+        }
     }
 
     public class Bomb extends Sprite {

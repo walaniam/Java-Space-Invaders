@@ -32,7 +32,7 @@ public abstract class Sprite {
 
     public void draw(Graphics g, ImageObserver observer) {
         if (visible) {
-            g.drawImage(getImage(), x, y, observer);
+            g.drawImage(image, x, y, observer);
         }
     }
 }

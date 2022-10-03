@@ -3,7 +3,7 @@ package walaniam.spaceinvaders;
 import com.zetcode.Commons;
 import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
-import com.zetcode.sprite.Shot;
+import com.zetcode.sprite.Sprite;
 import lombok.Getter;
 
 import java.awt.*;
@@ -12,71 +12,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.zetcode.Commons.*;
+
 @Getter
 public class GameModel {
 
     private final List<Alien> aliens;
     private final Player player;
-    private Shot shot;
 
-    public GameModel() {
+    public GameModel(GameState state) {
         this.aliens = Collections.unmodifiableList(newAliens());
-        this.player = new Player();
-        this.shot = new Shot();
+        this.player = new Player(state);
     }
 
-    public boolean drawAll(Graphics g, ImageObserver observer) {
-        drawAliens(g, observer);
-        boolean inGame = drawPlayer(g, observer);
-        shot.draw(g, observer);
+    public void drawAll(Graphics g, ImageObserver observer) {
+        aliens.forEach(alien -> alien.draw(g, observer));
+        player.draw(g, observer);
         drawBombing(g, observer);
-        return inGame;
-    }
-
-    private void drawAliens(Graphics g, ImageObserver observer) {
-        aliens.forEach(alien -> {
-            if (alien.isVisible()) {
-                g.drawImage(alien.getImage(), alien.getX(), alien.getY(), observer);
-            }
-            if (alien.isDying()) {
-                alien.die();
-            }
-        });
-    }
-
-    private boolean drawPlayer(Graphics g, ImageObserver observer) {
-        boolean inGame = true;
-        if (player.isVisible()) {
-            g.drawImage(player.getImage(), player.getX(), player.getY(), observer);
-        }
-        if (player.isDying()) {
-            player.die();
-            inGame = false;
-        }
-        return inGame;
     }
 
     private void drawBombing(Graphics g, ImageObserver observer) {
-        aliens.forEach(alien -> {
-            var b = alien.getBomb();
-            if (b.isVisible()) {
-                g.drawImage(b.getImage(), b.getX(), b.getY(), observer);
-            }
-        });
-    }
-
-    public void shotFired() {
-        if (!shot.isVisible()) {
-            shot = new Shot(player.getX(), player.getY());
-        }
+        aliens.stream()
+                .map(Alien::getBomb)
+                .filter(Sprite::isVisible)
+                .forEach(bomb -> bomb.draw(g, observer));
     }
 
     private List<Alien> newAliens() {
 
-        var aliens = new ArrayList<Alien>();
+        var aliens = new ArrayList<Alien>(NUMBER_OF_ALIENS_TO_DESTROY);
 
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 6; j++) {
+        for (int i = 0; i < ALIENS_ROWS; i++) {
+            for (int j = 0; j < ALIENS_COLUMNS; j++) {
                 var alien = new Alien(
                         Commons.ALIEN_INIT_X + 18 * j,
                         Commons.ALIEN_INIT_Y + 18 * i
