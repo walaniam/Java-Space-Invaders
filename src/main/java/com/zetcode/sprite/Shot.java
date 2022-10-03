@@ -37,8 +37,8 @@ public class Shot extends Sprite {
         shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SUPER_SHOT));
         shot.setX(x + 2);
         shot.setY(y - 12);
-        shot.fireRangeLeftX = Commons.ALIEN_WIDTH * 2;
-        shot.fireRangeRightX = Commons.ALIEN_WIDTH * 2;
+        shot.fireRangeLeftX = (int) Math.round(Commons.ALIEN_WIDTH * 2.5);
+        shot.fireRangeRightX = (int) Math.round(Commons.ALIEN_WIDTH * 2.5);
         return shot;
     }
 

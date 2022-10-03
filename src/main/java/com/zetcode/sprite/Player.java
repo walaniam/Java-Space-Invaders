@@ -22,7 +22,7 @@ public class Player extends Sprite {
     private final int width;
     private Shot shot;
     private Shot superShot;
-    private int superShotsAvailable = 5;
+    private int superShotsAvailable = 8;
 
     public Player(GameState state, List<Alien> aliens) {
         this.state = state;
