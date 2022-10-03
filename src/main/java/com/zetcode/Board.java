@@ -4,10 +4,9 @@ import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Sprite;
 import lombok.RequiredArgsConstructor;
-import walaniam.spaceinvaders.GameModel;
-import walaniam.spaceinvaders.GameState;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,19 +19,14 @@ import java.util.Random;
 
 public class Board extends JPanel {
 
-    private final GameState state = new GameState();
-    private final GameModel model = new GameModel(state);
-    private final Dimension dimension;
+    private final GameModel model = new GameModel();
+    private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
     private final Timer timer;
 
     private int direction = -1;
-    private int deaths = 0;
     private String message = "Game Over";
 
-
     public Board() {
-        this.dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
-
         addKeyListener(new PlayerKeyListener(model.getPlayer()));
         setFocusable(true);
         setBackground(Color.black);
@@ -53,7 +47,7 @@ public class Board extends JPanel {
         g.fillRect(0, 0, dimension.width, dimension.height);
         g.setColor(Color.green);
 
-        if (state.isInGame()) {
+        if (model.isInGame()) {
             g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
             model.drawAll(g, this);
         } else {
@@ -87,8 +81,8 @@ public class Board extends JPanel {
 
     private void update() {
 
-        if (deaths == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
-            state.setInGame(false);
+        if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
+            model.setInGame(false);
             timer.stop();
             message = "Game won!";
         }
@@ -100,7 +94,7 @@ public class Board extends JPanel {
         player.act();
 
         // shot
-        updateShot();
+        player.update();
 
         // aliens
 
@@ -136,7 +130,7 @@ public class Board extends JPanel {
                 .forEach(alien -> {
                     int y = alien.getY();
                     if (y > Commons.GROUND - Commons.ALIEN_HEIGHT) {
-                        state.setInGame(false);
+                        model.setInGame(false);
                         message = "Invasion!";
                     }
                     alien.act(direction);
@@ -180,46 +174,6 @@ public class Board extends JPanel {
                     bomb.die();
                 }
             }
-        }
-    }
-
-    private void updateShot() {
-
-        var shot = model.getPlayer().getShot();
-        var aliens = model.getAliens();
-
-        if (!shot.isVisible()) {
-            return;
-        }
-
-        int shotX = shot.getX();
-        int shotY = shot.getY();
-
-        aliens.stream()
-                .filter(alien -> alien.isVisible() && shot.isVisible())
-                .forEach(alien -> {
-                    int alienX = alien.getX();
-                    int alienY = alien.getY();
-                    if (shotX >= alienX
-                            && shotX <= (alienX + Commons.ALIEN_WIDTH)
-                            && shotY >= alienY
-                            && shotY <= (alienY + Commons.ALIEN_HEIGHT)) {
-
-                        Image explosionImg = ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION);
-                        alien.setImage(explosionImg);
-                        alien.setDying(true);
-                        deaths++;
-                        shot.die();
-                    }
-                });
-
-        int y = shot.getY();
-        y -= 4;
-
-        if (y < 0) {
-            shot.die();
-        } else {
-            shot.setY(y);
         }
     }
 

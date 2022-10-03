@@ -35,4 +35,7 @@ public abstract class Sprite {
             g.drawImage(image, x, y, observer);
         }
     }
+
+    public void update() {
+    }
 }

@@ -1,15 +1,15 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import walaniam.spaceinvaders.GameState;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameState;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
+import java.util.List;
 
 @Slf4j
 public class Player extends Sprite {
@@ -18,22 +18,20 @@ public class Player extends Sprite {
     private static final int START_Y = 280;
 
     private final GameState state;
+    private final List<Alien> aliens;
     private final int width;
-    @Getter
     private Shot shot;
-    @Getter
     private SuperShot superShot;
     private int superShotsAvailable = 5;
 
-    public Player(GameState state) {
+    public Player(GameState state, List<Alien> aliens) {
         this.state = state;
+        this.aliens = aliens;
         Image playerImage = ImageRepository.INSTANCE.getImage(ImageResource.PLAYER);
         this.width = playerImage.getWidth(null);
         setImage(playerImage);
         setX(START_X);
         setY(START_Y);
-        this.shot = Shot.nonVisible();
-        this.superShot = SuperShot.nonVisible();
     }
 
     @Override
@@ -44,8 +42,22 @@ public class Player extends Sprite {
             die();
             state.setInGame(false);
         }
-        shot.draw(g, observer);
-        superShot.draw(g, observer);
+        if (shot != null) {
+            shot.draw(g, observer);
+        }
+        if (superShot != null) {
+            superShot.draw(g, observer);
+        }
+    }
+
+    @Override
+    public void update() {
+        if (shot != null) {
+            shot.update();
+        }
+        if (superShot != null) {
+            superShot.update();
+        }
     }
 
     public void act() {
@@ -76,15 +88,15 @@ public class Player extends Sprite {
     }
 
     private void shotFired() {
-        if (!shot.isVisible() && state.isInGame()) {
-            shot = Shot.ofPlayerPosition(x, y);
+        if (state.isInGame() && (shot == null || !shot.isVisible())) {
+            shot = Shot.ofPlayerPosition(state, aliens, x, y);
         }
     }
 
     private void superShotFired() {
-        if (!superShot.isVisible() && state.isInGame() && superShotsAvailable > 0) {
+        if (state.isInGame() && (superShot == null || !superShot.isVisible() && superShotsAvailable > 0)) {
             superShotsAvailable--;
-            superShot = SuperShot.ofPlayerPosition(x, y);
+            superShot = SuperShot.ofPlayerPosition(state, aliens, x, y);
         }
     }
 }
