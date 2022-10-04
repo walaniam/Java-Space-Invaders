@@ -3,11 +3,9 @@ package com.zetcode.sprite;
 import com.zetcode.Commons;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
-import java.awt.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,7 +24,7 @@ public class Shot extends Sprite {
 
     static Shot regularShot(GameState state, List<Alien> aliens, int x, int y) {
         var shot = new Shot(state, aliens);
-        shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SHOT));
+        shot.setImage(ImageResource.SHOT);
         shot.setX(x + H_SPACE);
         shot.setY(y - V_SPACE);
         return shot;
@@ -34,7 +32,7 @@ public class Shot extends Sprite {
 
     static Shot superShot(GameState state, List<Alien> aliens, int x, int y) {
         var shot = new Shot(state, aliens);
-        shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SUPER_SHOT));
+        shot.setImage(ImageResource.SUPER_SHOT);
         shot.setX(x + 2);
         shot.setY(y - 12);
         shot.fireRangeLeftX = (int) Math.round(Commons.ALIEN_WIDTH * 2.5);
@@ -57,8 +55,7 @@ public class Shot extends Sprite {
                     if (x >= (alienX - fireRangeLeftX) && x <= (alienX + fireRangeRightX)
                             && y >= alienY && y <= (alienY + fireRangeY)) {
 
-                        Image explosionImg = ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION);
-                        alien.setImage(explosionImg);
+                        alien.setImage(ImageResource.EXPLOSION);
                         alien.setDying(true);
                         state.plusDeath();
                         hit.set(true);

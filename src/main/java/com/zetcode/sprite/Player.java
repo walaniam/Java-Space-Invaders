@@ -6,7 +6,8 @@ import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
 import java.util.List;
@@ -27,9 +28,10 @@ public class Player extends Sprite {
     public Player(GameState state, List<Alien> aliens) {
         this.state = state;
         this.aliens = aliens;
-        Image playerImage = ImageRepository.INSTANCE.getImage(ImageResource.PLAYER);
+        var imageResource = ImageResource.PLAYER;
+        setImage(imageResource);
+        Image playerImage = ImageRepository.INSTANCE.getImage(imageResource);
         this.width = playerImage.getWidth(null);
-        setImage(playerImage);
         setX(START_X);
         setY(START_Y);
     }

@@ -1,10 +1,9 @@
 package com.zetcode.sprite;
 
 import lombok.Getter;
-import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.image.ImageObserver;
 
 @Getter
@@ -16,7 +15,7 @@ public class Alien extends Sprite {
         this.x = x;
         this.y = y;
         this.bomb = new Bomb(x, y);
-        setImage(ImageRepository.INSTANCE.getImage(ImageResource.ALIEN));
+        setImage(ImageResource.ALIEN);
     }
 
     public void act(int direction) {
@@ -37,7 +36,7 @@ public class Alien extends Sprite {
             super(false);
             this.x = x;
             this.y = y;
-            setImage(ImageRepository.INSTANCE.getImage(ImageResource.BOMB));
+            setImage(ImageResource.BOMB);
         }
     }
 }

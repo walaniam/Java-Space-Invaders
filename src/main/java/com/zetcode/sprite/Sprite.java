@@ -2,16 +2,18 @@ package com.zetcode.sprite;
 
 import lombok.Getter;
 import lombok.Setter;
+import walaniam.spaceinvaders.ImageRepository;
+import walaniam.spaceinvaders.ImageResource;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.image.ImageObserver;
 
 @Getter
 @Setter
 public abstract class Sprite {
 
+    private ImageResource image;
     private boolean visible;
-    private Image image;
     private boolean dying;
 
     protected int x;
@@ -32,7 +34,8 @@ public abstract class Sprite {
 
     public void draw(Graphics g, ImageObserver observer) {
         if (visible) {
-            g.drawImage(image, x, y, observer);
+            var awtImage = ImageRepository.INSTANCE.getImage(image);
+            g.drawImage(awtImage, x, y, observer);
         }
     }
 

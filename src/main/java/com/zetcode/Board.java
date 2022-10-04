@@ -4,11 +4,13 @@ import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Sprite;
 import lombok.RequiredArgsConstructor;
-import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.StateExchange;
 import walaniam.spaceinvaders.model.GameModel;
+import walaniam.spaceinvaders.model.SinglePlayerGameModel;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +21,8 @@ import java.util.Random;
 
 public class Board extends JPanel {
 
-    private final GameModel model = new GameModel();
+    private final StateExchange stateExchange = new StateExchange();
+    private final GameModel model = new SinglePlayerGameModel();
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
     private final Timer timer;
 
@@ -167,7 +170,7 @@ public class Board extends JPanel {
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    player.setImage(ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION));
+                    player.setImage(ImageResource.EXPLOSION);
                     player.setDying(true);
                     bomb.die();
                 }
@@ -186,6 +189,7 @@ public class Board extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             update();
+            stateExchange.write(model);
             Board.this.repaint();
         }
     }
