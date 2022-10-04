@@ -10,6 +10,8 @@ import java.util.List;
 public interface GameModel extends GameState {
     Player getPlayer();
 
+    Player getPlayerTwo();
+
     void drawAll(Graphics g, ImageObserver observer);
 
     List<Alien> getAliens();

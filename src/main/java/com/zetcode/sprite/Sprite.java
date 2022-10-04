@@ -20,11 +20,12 @@ public abstract class Sprite {
     protected int y;
     protected int dx;
 
-    public Sprite() {
-        this(true);
+    public Sprite(ImageResource image) {
+        this(image, true);
     }
 
-    public Sprite(boolean visible) {
+    public Sprite(ImageResource image, boolean visible) {
+        this.image = image;
         this.visible = visible;
     }
 

@@ -25,15 +25,24 @@ public class Player extends Sprite {
     private Shot superShot;
     private int superShotsAvailable = 8;
 
-    public Player(GameState state, List<Alien> aliens) {
+    private Player(GameState state, List<Alien> aliens) {
+        super(ImageResource.PLAYER);
         this.state = state;
         this.aliens = aliens;
-        var imageResource = ImageResource.PLAYER;
-        setImage(imageResource);
-        Image playerImage = ImageRepository.INSTANCE.getImage(imageResource);
+        Image playerImage = ImageRepository.INSTANCE.getImage(getImage());
         this.width = playerImage.getWidth(null);
-        setX(START_X);
-        setY(START_Y);
+        this.x = START_X;
+        this.y = START_Y;
+    }
+
+    public static Player playerOne(GameState state, List<Alien> aliens) {
+        return new Player(state, aliens);
+    }
+
+    public static Player playerTwo(GameState state, List<Alien> aliens) {
+        var player = new Player(state, aliens);
+        player.x = START_X + 15;
+        return player;
     }
 
     @Override

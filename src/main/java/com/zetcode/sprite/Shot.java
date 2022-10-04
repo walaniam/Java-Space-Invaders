@@ -1,8 +1,6 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
@@ -10,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Shot extends Sprite {
 
     private static final int H_SPACE = 6;
@@ -22,16 +19,21 @@ public class Shot extends Sprite {
     private int fireRangeRightX = Commons.ALIEN_WIDTH;
     private int fireRangeY = Commons.ALIEN_HEIGHT;
 
+    private Shot(ImageResource image, GameState state, List<Alien> aliens) {
+        super(image);
+        this.state = state;
+        this.aliens = aliens;
+    }
+
     static Shot regularShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(state, aliens);
-        shot.setImage(ImageResource.SHOT);
+        var shot = new Shot(ImageResource.SHOT, state, aliens);
         shot.setX(x + H_SPACE);
         shot.setY(y - V_SPACE);
         return shot;
     }
 
     static Shot superShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(state, aliens);
+        var shot = new Shot(ImageResource.SUPER_SHOT, state, aliens);
         shot.setImage(ImageResource.SUPER_SHOT);
         shot.setX(x + 2);
         shot.setY(y - 12);

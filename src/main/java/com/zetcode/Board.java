@@ -1,41 +1,60 @@
 package com.zetcode;
 
 import com.zetcode.sprite.Alien;
-import com.zetcode.sprite.Player;
+import com.zetcode.sprite.Direction;
 import com.zetcode.sprite.Sprite;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
-import walaniam.spaceinvaders.StateExchange;
 import walaniam.spaceinvaders.model.GameModel;
-import walaniam.spaceinvaders.model.SinglePlayerGameModel;
+import walaniam.spaceinvaders.model.GameModelImpl;
+import walaniam.spaceinvaders.multi.StateExchangeServer;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.Random;
 
+import static com.zetcode.Commons.IMMORTAL;
+
+@Slf4j
 public class Board extends JPanel {
 
-    private final StateExchange stateExchange = new StateExchange();
-    private final GameModel model = new SinglePlayerGameModel();
+    private String message = "Game Over";
+
+    private final GameModel model;
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
     private final Timer timer;
 
-    private int direction = -1;
-    private String message = "Game Over";
+    private StateExchangeServer stateExchangeServer;
 
-    public Board() {
-        addKeyListener(new PlayerKeyListener(model.getPlayer()));
+    private Board(GameModel gameModel) {
+        this.model = gameModel;
         setFocusable(true);
         setBackground(Color.black);
-
         this.timer = new Timer(Commons.DELAY, new GameCycle());
-        this.timer.start();
+    }
+
+    public static Board playerOneBoard() {
+        var model = new GameModelImpl();
+        var board = new Board(model);
+        board.addKeyListener(new PlayerKeyListener(model.getPlayer()));
+        board.stateExchangeServer = new StateExchangeServer(() -> model);
+        board.stateExchangeServer.open(remoteModel -> log.info("Accepted model: {}", remoteModel));
+        board.timer.start();
+        return board;
+    }
+
+    public static Board playerTwoBoard(String serverAddress) {
+        var model = new GameModelImpl();
+        var board = new Board(model);
+        board.addKeyListener(new PlayerKeyListener(model.getPlayerTwo()));
+//        board.stateExchangeServer = new StateExchangeServer(() -> model);
+//        board.stateExchangeServer.open(remoteModel -> log.info("Accepted model: {}", remoteModel));
+        board.timer.start();
+        return board;
     }
 
     @Override
@@ -110,9 +129,9 @@ public class Board extends JPanel {
 
             int x = alien.getX();
 
-            if (x >= Commons.BOARD_WIDTH - Commons.BORDER_RIGHT && direction != -1) {
+            if (x >= Commons.BOARD_WIDTH - Commons.BORDER_RIGHT && model.getAlienDirection() != Direction.LEFT) {
 
-                direction = -1;
+                model.setAlienDirection(Direction.LEFT);
 
                 Iterator<Alien> i1 = aliens.iterator();
                 while (i1.hasNext()) {
@@ -121,9 +140,9 @@ public class Board extends JPanel {
                 }
             }
 
-            if (x <= Commons.BORDER_LEFT && direction != 1) {
+            if (x <= Commons.BORDER_LEFT && model.getAlienDirection() != Direction.RIGHT) {
 
-                direction = 1;
+                model.setAlienDirection(Direction.RIGHT);
 
                 Iterator<Alien> i2 = aliens.iterator();
                 while (i2.hasNext()) {
@@ -141,7 +160,7 @@ public class Board extends JPanel {
                         model.setInGame(false);
                         message = "Invasion!";
                     }
-                    alien.act(direction);
+                    alien.act(model.getAlienDirection());
                 });
 
         // bombs
@@ -170,8 +189,11 @@ public class Board extends JPanel {
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    player.setImage(ImageResource.EXPLOSION);
-                    player.setDying(true);
+                    if (!IMMORTAL) {
+                        player.setImage(ImageResource.EXPLOSION);
+                        player.setDying(true);
+                    }
+
                     bomb.die();
                 }
             }
@@ -188,25 +210,17 @@ public class Board extends JPanel {
     private class GameCycle implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (stateExchangeServer != null) {
+                try {
+                    stateExchangeServer.await();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    log.warn("State exchange interrupted", ex);
+                }
+            }
             update();
-            stateExchange.write(model);
             Board.this.repaint();
         }
     }
 
-    @RequiredArgsConstructor
-    private class PlayerKeyListener extends KeyAdapter {
-
-        private final Player player;
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            player.keyReleased(e);
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            player.keyPressed(e);
-        }
-    }
 }

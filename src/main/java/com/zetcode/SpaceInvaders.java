@@ -2,19 +2,28 @@ package com.zetcode;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import java.awt.EventQueue;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceInvaders extends JFrame  {
 
-    public SpaceInvaders() {
+    public SpaceInvaders(Optional<String> serverAddress) {
 
-        add(new Board());
+        serverAddress.ifPresentOrElse(
+                remoteAddress -> {
+                    add(Board.playerTwoBoard(remoteAddress));
+                    setTitle("Space Invaders - " + remoteAddress);
+                },
+                () -> {
+                    add(Board.playerOneBoard());
+                    setTitle("Space Invaders");
+                }
+        );
 
-        setTitle("Space Invaders");
         setSize(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -25,7 +34,11 @@ public class SpaceInvaders extends JFrame  {
     public static void main(String[] args) {
         log.info("Starting game with params: {}", Arrays.stream(args).collect(Collectors.joining(", ")));
         EventQueue.invokeLater(() -> {
-            var frame = new SpaceInvaders();
+            String gameServerAddress = null;
+            if (args.length > 0) {
+                gameServerAddress = args[0];
+            }
+            var frame = new SpaceInvaders(Optional.ofNullable(gameServerAddress));
             frame.setVisible(true);
         });
     }

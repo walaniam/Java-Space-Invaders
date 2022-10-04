@@ -15,15 +15,17 @@ import static com.zetcode.Commons.*;
 import static java.util.Collections.unmodifiableList;
 
 @Getter
-public class SinglePlayerGameModel implements GameModel {
+public class GameModelImpl implements GameModel {
 
     private final GameState state = new InternalState();
     private final List<Alien> aliens;
     private final Player player;
+    private final Player playerTwo;
 
-    public SinglePlayerGameModel() {
+    public GameModelImpl() {
         this.aliens = unmodifiableList(newAliens());
-        this.player = new Player(state, aliens);
+        this.player = Player.playerOne(state, aliens);
+        this.playerTwo = Player.playerTwo(state, aliens);
     }
 
     public void drawAll(Graphics g, ImageObserver observer) {
@@ -71,5 +73,15 @@ public class SinglePlayerGameModel implements GameModel {
     @Override
     public void plusDeath() {
         state.plusDeath();
+    }
+
+    @Override
+    public void setAlienDirection(int direction) {
+        state.setAlienDirection(direction);
+    }
+
+    @Override
+    public int getAlienDirection() {
+        return state.getAlienDirection();
     }
 }
