@@ -1,20 +1,23 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
+@NoArgsConstructor
+@EqualsAndHashCode
 public class Shot extends Sprite {
 
     private static final int H_SPACE = 6;
     private static final int V_SPACE = 1;
 
-    private final GameState state;
-    private final List<Alien> aliens;
+    private GameState state;
+    private List<Alien> aliens;
     private int fireRangeLeftX = 0;
     private int fireRangeRightX = Commons.ALIEN_WIDTH;
     private int fireRangeY = Commons.ALIEN_HEIGHT;

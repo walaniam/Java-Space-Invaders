@@ -1,6 +1,8 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
@@ -12,15 +14,17 @@ import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
 import java.util.List;
 
+@NoArgsConstructor
 @Slf4j
+@EqualsAndHashCode
 public class Player extends Sprite {
 
     private static final int START_X = 270;
     private static final int START_Y = 280;
 
-    private final GameState state;
-    private final List<Alien> aliens;
-    private final int width;
+    private GameState state;
+    private List<Alien> aliens;
+    private int width;
     private Shot shot;
     private Shot superShot;
     private int superShotsAvailable = 8;

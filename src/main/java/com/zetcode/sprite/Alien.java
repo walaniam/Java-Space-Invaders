@@ -1,15 +1,19 @@
 package com.zetcode.sprite;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
 
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
 
 @Getter
+@NoArgsConstructor
+@EqualsAndHashCode
 public class Alien extends Sprite {
 
-    private final Bomb bomb;
+    private Bomb bomb;
 
     public Alien(int x, int y) {
         super(ImageResource.ALIEN);
@@ -27,15 +31,6 @@ public class Alien extends Sprite {
         super.draw(g, observer);
         if (isDying()) {
             die();
-        }
-    }
-
-    public class Bomb extends Sprite {
-
-        public Bomb(int x, int y) {
-            super(ImageResource.BOMB, false);
-            this.x = x;
-            this.y = y;
         }
     }
 }

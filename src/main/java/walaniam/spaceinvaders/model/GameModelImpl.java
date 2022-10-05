@@ -4,6 +4,7 @@ import com.zetcode.Commons;
 import com.zetcode.sprite.Alien;
 import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Sprite;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.awt.Graphics;
@@ -12,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.zetcode.Commons.*;
-import static java.util.Collections.unmodifiableList;
 
 @Getter
+@EqualsAndHashCode
 public class GameModelImpl implements GameModel {
 
     private final GameState state = new InternalState();
@@ -23,7 +24,7 @@ public class GameModelImpl implements GameModel {
     private final Player playerTwo;
 
     public GameModelImpl() {
-        this.aliens = unmodifiableList(newAliens());
+        this.aliens = newAliens();
         this.player = Player.playerOne(state, aliens);
         this.playerTwo = Player.playerTwo(state, aliens);
     }

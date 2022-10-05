@@ -1,12 +1,15 @@
 package com.zetcode;
 
 import com.zetcode.sprite.Alien;
+import com.zetcode.sprite.Bomb;
 import com.zetcode.sprite.Direction;
 import com.zetcode.sprite.Sprite;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.model.GameModelImpl;
+import walaniam.spaceinvaders.multi.BlockingSupplier;
+import walaniam.spaceinvaders.multi.StateExchangeClient;
 import walaniam.spaceinvaders.multi.StateExchangeServer;
 
 import javax.swing.JPanel;
@@ -22,18 +25,21 @@ import static com.zetcode.Commons.IMMORTAL;
 @Slf4j
 public class Board extends JPanel {
 
-    private String message = "Game Over";
+    private String gameEndMessage = "Game Over";
 
+    private final BlockingSupplier<GameModel> modelSupplier = new BlockingSupplier<>();
     private final GameModel model;
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
     private final Timer timer;
 
     private StateExchangeServer stateExchangeServer;
+    private StateExchangeClient stateExchangeClient;
 
     private Board(GameModel gameModel) {
         this.model = gameModel;
         setFocusable(true);
         setBackground(Color.black);
+        modelSupplier.set(model);
         this.timer = new Timer(Commons.DELAY, new GameCycle());
     }
 
@@ -41,8 +47,11 @@ public class Board extends JPanel {
         var model = new GameModelImpl();
         var board = new Board(model);
         board.addKeyListener(new PlayerKeyListener(model.getPlayer()));
-        board.stateExchangeServer = new StateExchangeServer(() -> model);
-        board.stateExchangeServer.open(remoteModel -> log.info("Accepted model: {}", remoteModel));
+        board.stateExchangeServer = new StateExchangeServer(
+                remoteModel -> log.info("Accepted model: {}", remoteModel),
+                board.modelSupplier
+        );
+        board.stateExchangeServer.open();
         board.timer.start();
         return board;
     }
@@ -51,8 +60,12 @@ public class Board extends JPanel {
         var model = new GameModelImpl();
         var board = new Board(model);
         board.addKeyListener(new PlayerKeyListener(model.getPlayerTwo()));
-//        board.stateExchangeServer = new StateExchangeServer(() -> model);
-//        board.stateExchangeServer.open(remoteModel -> log.info("Accepted model: {}", remoteModel));
+        board.stateExchangeClient = new StateExchangeClient(
+                serverAddress,
+                remoteModel -> log.info("Accepted model: {}", remoteModel),
+                board.modelSupplier
+        );
+        board.stateExchangeClient.open();
         board.timer.start();
         return board;
     }
@@ -102,7 +115,7 @@ public class Board extends JPanel {
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(message, (Commons.BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
+        g.drawString(gameEndMessage, (Commons.BOARD_WIDTH - fontMetrics.stringWidth(gameEndMessage)) / 2,
                 Commons.BOARD_WIDTH / 2);
     }
 
@@ -111,7 +124,7 @@ public class Board extends JPanel {
         if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
             model.setInGame(false);
             timer.stop();
-            message = "Game won!";
+            gameEndMessage = "Game won!";
         }
 
         var player = model.getPlayer();
@@ -158,7 +171,7 @@ public class Board extends JPanel {
                     int y = alien.getY();
                     if (y > Commons.GROUND - Commons.ALIEN_HEIGHT) {
                         model.setInGame(false);
-                        message = "Invasion!";
+                        gameEndMessage = "Invasion!";
                     }
                     alien.act(model.getAlienDirection());
                 });
@@ -169,7 +182,7 @@ public class Board extends JPanel {
         for (Alien alien : aliens) {
 
             int shot = generator.nextInt(15);
-            Alien.Bomb bomb = alien.getBomb();
+            Bomb bomb = alien.getBomb();
 
             if (shot == Commons.CHANCE && alien.isVisible() && !bomb.isVisible()) {
                 bomb.setVisible(true);
@@ -210,14 +223,7 @@ public class Board extends JPanel {
     private class GameCycle implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (stateExchangeServer != null) {
-                try {
-                    stateExchangeServer.await();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    log.warn("State exchange interrupted", ex);
-                }
-            }
+            modelSupplier.set(model);
             update();
             Board.this.repaint();
         }

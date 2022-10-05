@@ -1,6 +1,8 @@
 package com.zetcode.sprite;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
@@ -10,6 +12,8 @@ import java.awt.image.ImageObserver;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@EqualsAndHashCode
 public abstract class Sprite {
 
     private ImageResource image;

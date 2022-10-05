@@ -5,7 +5,6 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 public class DataSerializer {
 
@@ -15,16 +14,16 @@ public class DataSerializer {
         kryo.setRegistrationRequired(false);
     }
 
-    public byte[] serialize(Object data) throws IOException {
-        try (var bytes = new ByteArrayOutputStream()) {
-            var out = new Output(bytes);
+    public byte[] serialize(Object data) {
+        try (var out = new Output(new ByteArrayOutputStream())) {
             kryo.writeObject(out, data);
-            return bytes.toByteArray();
+            return out.toBytes();
         }
     }
 
     public <T> T deserialize(byte[] bytes, Class<T> type) {
-        var input = new Input(bytes);
-        return kryo.readObject(input, type);
+        try (var input = new Input(bytes)) {
+            return kryo.readObject(input, type);
+        }
     }
 }
