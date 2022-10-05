@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class SocketDataReadWrite implements Closeable {
 
+    private static final boolean VERBOSE = false;
+
     private static final int BUFFER_SIZE = 4 * 1024;
 
     private final AtomicBoolean opened = new AtomicBoolean();
@@ -75,7 +77,9 @@ public class SocketDataReadWrite implements Closeable {
         while (opened.get()) {
             // READ FROM CLIENT
             int bytesRead = inputStream.read(buffer);
-            log.info("Reading {} bytes", bytesRead);
+            if (VERBOSE) {
+                log.info("Reading {} bytes", bytesRead);
+            }
             if (bytesRead > -1 || collector != null) {
                 if (collector == null) {
                     collector = new ByteArrayOutputStream(BUFFER_SIZE);
@@ -103,9 +107,13 @@ public class SocketDataReadWrite implements Closeable {
         while (opened.get()) {
             // WRITE TO CLIENT
             var data = remoteWrite.get();
-            log.info("Writing {}", data);
+            if (VERBOSE) {
+                log.info("Writing {}", data);
+            }
             byte[] localModelBytes = serializer.serialize(data);
-            log.info("Writing {} bytes", localModelBytes.length);
+            if (VERBOSE) {
+                log.info("Writing {} bytes", localModelBytes.length);
+            }
             try {
                 outputStream.write(localModelBytes);
                 outputStream.flush();

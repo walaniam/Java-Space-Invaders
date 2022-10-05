@@ -87,6 +87,7 @@ public class Player extends Sprite {
     }
 
     public void keyPressed(KeyEvent e) {
+//        log.info("Key pressed {}", e);
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;

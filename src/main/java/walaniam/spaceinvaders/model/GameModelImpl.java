@@ -6,6 +6,7 @@ import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Sprite;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
@@ -21,7 +22,8 @@ public class GameModelImpl implements GameModel {
     private final GameState state = new InternalState();
     private final List<Alien> aliens;
     private final Player player;
-    private final Player playerTwo;
+    @Setter
+    private Player playerTwo;
 
     public GameModelImpl() {
         this.aliens = newAliens();

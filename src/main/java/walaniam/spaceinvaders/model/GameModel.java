@@ -12,6 +12,8 @@ public interface GameModel extends GameState {
 
     Player getPlayerTwo();
 
+    void setPlayerTwo(Player player);
+
     void drawAll(Graphics g, ImageObserver observer);
 
     List<Alien> getAliens();

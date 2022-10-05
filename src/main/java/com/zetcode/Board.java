@@ -196,13 +196,16 @@ public abstract class Board extends JPanel {
         }
     }
 
-    protected abstract void syncGameModels();
+    protected abstract void preUpdateSync();
+
+    protected abstract void postUpdateSync();
 
     private class GameCycle implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            preUpdateSync();
             updateModel();
-            syncGameModels();
+            postUpdateSync();
             Board.this.repaint();
         }
     }
