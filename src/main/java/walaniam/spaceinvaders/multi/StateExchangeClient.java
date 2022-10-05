@@ -14,22 +14,28 @@ public class StateExchangeClient implements Closeable {
 
     private final String host;
     private final int port;
-    private final Consumer<GameModel> readConsumer;
-    private final Supplier<GameModel> writeSupplier;
+    private final Consumer<GameModel> remoteRead;
+    private final Supplier<GameModel> remoteWrite;
 
     private SocketDataReadWrite socketData;
 
-    public StateExchangeClient(String serverAddress, Consumer<GameModel> readConsumer, Supplier<GameModel> writeSupplier) {
+    /**
+     *
+     * @param serverAddress
+     * @param remoteRead consumes model from remote
+     * @param remoteWrite writes model to remote
+     */
+    public StateExchangeClient(String serverAddress, Consumer<GameModel> remoteRead, Supplier<GameModel> remoteWrite) {
         this.host = serverAddress.split(":")[0];
         this.port = Integer.parseInt(serverAddress.split(":")[1]);
-        this.readConsumer = readConsumer;
-        this.writeSupplier = writeSupplier;
+        this.remoteRead = remoteRead;
+        this.remoteWrite = remoteWrite;
     }
 
     public void open() {
         try {
             var socket = new Socket(host, port);
-            socketData = new SocketDataReadWrite(socket, readConsumer, writeSupplier);
+            socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
             socketData.startListening();
         } catch (IOException e) {
             throw new RuntimeException(e);

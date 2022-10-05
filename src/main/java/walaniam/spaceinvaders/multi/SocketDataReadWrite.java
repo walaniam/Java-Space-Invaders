@@ -27,8 +27,8 @@ public class SocketDataReadWrite implements Closeable {
     private final CountDownLatch isRunningLatch = new CountDownLatch(1);
 
     private final Socket socket;
-    private final Consumer<GameModel> readConsumer;
-    private final Supplier<GameModel> writeSupplier;
+    private final Consumer<GameModel> remoteRead;
+    private final Supplier<GameModel> remoteWrite;
 
     public void startListening() {
 
@@ -91,7 +91,7 @@ public class SocketDataReadWrite implements Closeable {
 
     private void notifyListener(byte[] data) {
         GameModelImpl model = serializer.deserialize(data, GameModelImpl.class);
-        readConsumer.accept(model);
+        remoteRead.accept(model);
     }
 
     private void writeSocket() throws IOException {
@@ -102,7 +102,7 @@ public class SocketDataReadWrite implements Closeable {
 
         while (opened.get()) {
             // WRITE TO CLIENT
-            var data = writeSupplier.get();
+            var data = remoteWrite.get();
             log.info("Writing {}", data);
             byte[] localModelBytes = serializer.serialize(data);
             log.info("Writing {} bytes", localModelBytes.length);

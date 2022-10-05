@@ -1,15 +1,12 @@
 package walaniam.spaceinvaders.multi;
 
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class BlockingSupplier<T> implements Supplier<T> {
+public class BlockingExchange<T> implements Supplier<T>, Consumer<T> {
 
     private final LinkedBlockingDeque<T> queue = new LinkedBlockingDeque<>(1);
-
-    public void set(T element) {
-        queue.offerLast(element);
-    }
 
     @Override
     public T get() {
@@ -19,5 +16,10 @@ public class BlockingSupplier<T> implements Supplier<T> {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void accept(T element) {
+        queue.offerLast(element);
     }
 }

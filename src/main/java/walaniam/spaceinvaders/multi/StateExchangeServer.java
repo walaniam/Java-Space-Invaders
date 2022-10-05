@@ -24,8 +24,14 @@ public class StateExchangeServer implements Closeable {
     private final CountDownLatch serverListening = new CountDownLatch(1);
     private final int port = 17777;
 
-    private final Consumer<GameModel> readConsumer;
-    private final Supplier<GameModel> writeSupplier;
+    /**
+     * Reads remote model from the client
+     */
+    private final Consumer<GameModel> remoteRead;
+    /**
+     * Supplies local model to the client
+     */
+    private final Supplier<GameModel> remoteWrite;
 
     private SocketDataReadWrite socketData;
     private Thread serverThread;
@@ -67,7 +73,7 @@ public class StateExchangeServer implements Closeable {
         while (opened.get()) {
             try (Socket socket = serverSocket.accept()) {
                 log.info("Connected {}", socket);
-                socketData = new SocketDataReadWrite(socket, readConsumer, writeSupplier);
+                socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
                 socketData.startListening();
                 socketData.awaitTillRunning();
             }

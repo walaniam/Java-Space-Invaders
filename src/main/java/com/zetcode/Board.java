@@ -1,16 +1,10 @@
 package com.zetcode;
 
-import com.zetcode.sprite.Alien;
-import com.zetcode.sprite.Bomb;
-import com.zetcode.sprite.Direction;
-import com.zetcode.sprite.Sprite;
+import com.zetcode.sprite.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameModel;
-import walaniam.spaceinvaders.model.GameModelImpl;
-import walaniam.spaceinvaders.multi.BlockingSupplier;
-import walaniam.spaceinvaders.multi.StateExchangeClient;
-import walaniam.spaceinvaders.multi.StateExchangeServer;
+import walaniam.spaceinvaders.multi.BlockingExchange;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -19,55 +13,38 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static com.zetcode.Commons.IMMORTAL;
 
 @Slf4j
-public class Board extends JPanel {
+public abstract class Board extends JPanel {
 
-    private String gameEndMessage = "Game Over";
+    protected String gameEndMessage = "Game Over";
 
-    private final BlockingSupplier<GameModel> modelSupplier = new BlockingSupplier<>();
-    private final GameModel model;
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
+    protected final BlockingExchange<GameModel> remoteRead;
+    protected final BlockingExchange<GameModel> remoteWrite;
+    protected final AtomicReference<GameModel> modelRef = new AtomicReference<>();
+    private final Function<GameModel, Player> playerFunction;
     private final Timer timer;
 
-    private StateExchangeServer stateExchangeServer;
-    private StateExchangeClient stateExchangeClient;
-
-    private Board(GameModel gameModel) {
-        this.model = gameModel;
+    protected Board(GameModel gameModel, Function<GameModel, Player> playerFunction,
+                    BlockingExchange<GameModel> remoteRead,
+                    BlockingExchange<GameModel> remoteWrite) {
+        this.modelRef.set(gameModel);
+        this.playerFunction = playerFunction;
+        this.remoteRead = remoteRead;
+        this.remoteWrite = remoteWrite;
+        addKeyListener(new PlayerKeyListener(modelRef, playerFunction));
         setFocusable(true);
         setBackground(Color.black);
-        modelSupplier.set(model);
         this.timer = new Timer(Commons.DELAY, new GameCycle());
     }
 
-    public static Board playerOneBoard() {
-        var model = new GameModelImpl();
-        var board = new Board(model);
-        board.addKeyListener(new PlayerKeyListener(model.getPlayer()));
-        board.stateExchangeServer = new StateExchangeServer(
-                remoteModel -> log.info("Accepted model: {}", remoteModel),
-                board.modelSupplier
-        );
-        board.stateExchangeServer.open();
-        board.timer.start();
-        return board;
-    }
-
-    public static Board playerTwoBoard(String serverAddress) {
-        var model = new GameModelImpl();
-        var board = new Board(model);
-        board.addKeyListener(new PlayerKeyListener(model.getPlayerTwo()));
-        board.stateExchangeClient = new StateExchangeClient(
-                serverAddress,
-                remoteModel -> log.info("Accepted model: {}", remoteModel),
-                board.modelSupplier
-        );
-        board.stateExchangeClient.open();
-        board.timer.start();
-        return board;
+    public void startGame() {
+        timer.start();
     }
 
     @Override
@@ -78,6 +55,8 @@ public class Board extends JPanel {
 
     private void doDrawing(Graphics g) {
 
+        var model = modelRef.get();
+
         g.setColor(Color.black);
         g.fillRect(0, 0, dimension.width, dimension.height);
         g.setColor(Color.green);
@@ -85,7 +64,6 @@ public class Board extends JPanel {
         if (model.isInGame()) {
             g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
             model.drawAll(g, this);
-            printState(g);
         } else {
             if (timer.isRunning()) {
                 timer.stop();
@@ -94,10 +72,6 @@ public class Board extends JPanel {
         }
 
         Toolkit.getDefaultToolkit().sync();
-    }
-
-    private void printState(Graphics g) {
-        // TODO
     }
 
     private void gameOver(Graphics g) {
@@ -119,7 +93,10 @@ public class Board extends JPanel {
                 Commons.BOARD_WIDTH / 2);
     }
 
-    private void update() {
+    private void updateModel() {
+
+        var model = modelRef.get();
+        var player = playerFunction.apply(model);
 
         if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
             model.setInGame(false);
@@ -127,7 +104,6 @@ public class Board extends JPanel {
             gameEndMessage = "Game won!";
         }
 
-        var player = model.getPlayer();
         var aliens = model.getAliens();
 
         // player
@@ -220,11 +196,13 @@ public class Board extends JPanel {
         }
     }
 
+    protected abstract void syncGameModels();
+
     private class GameCycle implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            modelSupplier.set(model);
-            update();
+            updateModel();
+            syncGameModels();
             Board.this.repaint();
         }
     }
