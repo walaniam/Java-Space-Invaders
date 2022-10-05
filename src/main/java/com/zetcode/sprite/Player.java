@@ -45,7 +45,8 @@ public class Player extends Sprite {
 
     public static Player playerTwo(GameState state, List<Alien> aliens) {
         var player = new Player(state, aliens);
-        player.x = START_X + 15;
+        player.setImage(ImageResource.PLAYER_TWO);
+        player.x = START_X + 25;
         return player;
     }
 

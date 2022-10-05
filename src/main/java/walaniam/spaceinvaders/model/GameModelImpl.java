@@ -32,6 +32,7 @@ public class GameModelImpl implements GameModel {
     public void drawAll(Graphics g, ImageObserver observer) {
         aliens.forEach(alien -> alien.draw(g, observer));
         player.draw(g, observer);
+        playerTwo.draw(g, observer);
         drawBombing(g, observer);
     }
 
