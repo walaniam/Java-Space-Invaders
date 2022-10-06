@@ -38,14 +38,14 @@ public class PlayerTwoBoard extends Board {
 
     @Override
     protected void preUpdateSync() {
-        log.info("Player two pre sync...");
+//        log.info("Player two pre sync...");
         var model = remoteRead.get();
         modelRef.set(model);
     }
 
     @Override
     protected void postUpdateSync() {
-        log.info("Player two post sync...");
+//        log.info("Player two post sync...");
         remoteWrite.accept(modelRef.get());
     }
 }

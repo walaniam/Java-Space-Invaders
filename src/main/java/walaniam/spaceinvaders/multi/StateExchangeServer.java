@@ -1,5 +1,6 @@
 package walaniam.spaceinvaders.multi;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.model.GameModel;
@@ -36,6 +37,8 @@ public class StateExchangeServer implements Closeable {
     private SocketDataReadWrite socketData;
     private Thread serverThread;
     private volatile ServerSocket serverSocket;
+    @Getter
+    private volatile boolean clientConnected;
 
     public void open() {
 
@@ -75,7 +78,14 @@ public class StateExchangeServer implements Closeable {
                 log.info("Connected {}", socket);
                 socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
                 socketData.startListening();
+                clientConnected = true;
                 socketData.awaitTillRunning();
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (socketData != null) {
+                    socketData.close();
+                }
+                clientConnected = false;
             }
         }
     }

@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class SocketDataReadWrite implements Closeable {
 
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
 
     private static final int BUFFER_SIZE = 4 * 1024;
 
@@ -133,10 +133,12 @@ public class SocketDataReadWrite implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
             opened.set(false);
             socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             isRunningLatch.countDown();
         }

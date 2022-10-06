@@ -3,6 +3,7 @@ package com.zetcode.sprite;
 import com.zetcode.Commons;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
@@ -17,12 +18,14 @@ import java.util.List;
 @NoArgsConstructor
 @Slf4j
 @EqualsAndHashCode
+@ToString(callSuper = true)
 public class Player extends Sprite {
 
     private static final int START_X = 270;
     private static final int START_Y = 280;
 
     private GameState state;
+    @ToString.Exclude
     private List<Alien> aliens;
     private int width;
     private Shot shot;

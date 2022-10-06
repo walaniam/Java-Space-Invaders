@@ -36,14 +36,20 @@ public class PlayerOneBoard extends Board {
 
     @Override
     protected void preUpdateSync() {
-        log.info("Player one pre sync...");
+//        log.info("Player one pre sync...");
         remoteWrite.accept(modelRef.get());
     }
 
     @Override
     protected void postUpdateSync() {
-        log.info("Player one post sync...");
-//        var playerTwoModel = remoteRead.get();
-//        modelRef.get().setPlayerTwo(playerTwoModel.getPlayerTwo());
+//        log.info("Player one post sync...");
+        if (stateExchangeServer.isClientConnected()) {
+            var playerTwoModel = remoteRead.get();
+            var playerTwo = playerTwoModel.getPlayerTwo();
+            log.info("Player two: {}", playerTwo);
+            modelRef.get().setPlayerTwo(playerTwo);
+        } else {
+//            System.out.println("No data");
+        }
     }
 }
