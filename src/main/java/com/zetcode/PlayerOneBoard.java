@@ -7,6 +7,8 @@ import walaniam.spaceinvaders.model.GameModelImpl;
 import walaniam.spaceinvaders.multi.MultiplayerContext;
 import walaniam.spaceinvaders.multi.MultiplayerServer;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public class PlayerOneBoard extends Board {
 
@@ -42,17 +44,17 @@ public class PlayerOneBoard extends Board {
     protected void postUpdateSync() {
         log.debug("Player one post sync...");
         if (multiplayerServer.isClientConnected()) {
-            GameModel remoteModel = remoteRead.get();
-            modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
-                Player playerTwo = remote.getPlayerTwo();
-                log.debug("Player two: {}", playerTwo);
-                current.setPlayerTwo(playerTwo);
-                return current;
-            });
-
-//            var playerTwo = remoteModel.getPlayerTwo();
-//            log.debug("Player two: {}", playerTwo);
-//            modelRef.get().setPlayerTwo(playerTwo);
+            GameModel remoteModel = remoteRead.get(2, TimeUnit.SECONDS);
+            if (remoteModel != null) {
+                modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
+                    Player playerTwo = remote.getPlayerTwo();
+                    log.debug("Player two: {}", playerTwo);
+                    current.setPlayerTwo(playerTwo);
+                    return current;
+                });
+            } else {
+                log.info("Remote model was null");
+            }
         }
     }
 }

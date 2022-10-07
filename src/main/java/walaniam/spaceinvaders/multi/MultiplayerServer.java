@@ -79,12 +79,15 @@ public class MultiplayerServer implements Closeable {
         while (opened.get()) {
             try (Socket socket = serverSocket.accept()) {
                 log.info("Connected {}", socket);
+                log.info("remoteWrite: {}", remoteWrite);
                 socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
                 socketData.startListening();
                 clientConnected = true;
                 socketData.awaitTillRunning();
+                log.info("Client disconnected");
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Client disconnected", e);
+            } finally {
                 if (socketData != null) {
                     socketData.close();
                 }
@@ -95,11 +98,12 @@ public class MultiplayerServer implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (opened.compareAndSet(true, false)) {
-            log.info("Closing...");
+        log.info("Closing...");
+        try {
             if (socketData != null) {
                 socketData.close();
             }
+        } finally {
             serverSocket.close();
         }
     }

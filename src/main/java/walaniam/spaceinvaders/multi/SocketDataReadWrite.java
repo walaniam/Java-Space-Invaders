@@ -39,9 +39,10 @@ public class SocketDataReadWrite implements Closeable {
             readStartedLatch.countDown();
             try {
                 readSocket();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("Could not open socket: " + socket, e);
                 opened.set(false);
+                isRunningLatch.countDown();
             }
         }, "game-state-reader");
 
@@ -49,9 +50,10 @@ public class SocketDataReadWrite implements Closeable {
             writeStartedLatch.countDown();
             try {
                 writeSocket();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("Could not open socket: " + socket, e);
                 opened.set(false);
+                isRunningLatch.countDown();
             }
         }, "game-state-writer");
 
@@ -76,20 +78,27 @@ public class SocketDataReadWrite implements Closeable {
 
         log.info("Start reading from socket...");
         while (opened.get()) {
-            // READ FROM CLIENT
-            int bytesRead = inputStream.read(buffer);
-            if (VERBOSE) {
-                log.info("Reading {} bytes", bytesRead);
-            }
-            if (bytesRead > -1 || collector != null) {
-                if (collector == null) {
-                    collector = new ByteArrayOutputStream(BUFFER_SIZE);
+            try {
+                // READ FROM CLIENT
+                int bytesRead = inputStream.read(buffer);
+                if (VERBOSE) {
+                    log.info("Reading {} bytes", bytesRead);
                 }
-                collector.write(buffer, 0, bytesRead);
-                if (bytesRead < BUFFER_SIZE) {
-                    notifyListener(collector.toByteArray());
-                    collector = null;
+                if (bytesRead > -1 || collector != null) {
+                    if (collector == null) {
+                        collector = new ByteArrayOutputStream(BUFFER_SIZE);
+                    }
+                    collector.write(buffer, 0, bytesRead);
+                    if (bytesRead < BUFFER_SIZE) {
+                        notifyListener(collector.toByteArray());
+                        collector = null;
+                    }
                 }
+            } catch (SocketException e) {
+                log.error("Failed reading from socket: " + socket, e);
+                throw e;
+            } catch (IOException e) {
+                log.error("Failed reading from socket: " + socket, e);
             }
         }
     }
@@ -108,20 +117,23 @@ public class SocketDataReadWrite implements Closeable {
         log.info("Start writing to socket...");
 
         while (opened.get()) {
-            // WRITE TO CLIENT
-            var data = remoteWrite.get();
-            if (VERBOSE) {
-                log.info("Writing {}", data);
-            }
-            byte[] localModelBytes = serializer.serialize(data);
-            if (VERBOSE) {
-                log.info("Writing {} bytes", localModelBytes.length);
-            }
             try {
-                outputStream.write(localModelBytes);
+                // WRITE TO CLIENT
+                var data = remoteWrite.get();
+                if (VERBOSE) {
+                    log.info("Writing {}", data);
+                }
+                byte[] dataBytes = serializer.serialize(data);
+                if (VERBOSE) {
+                    log.info("Writing {} bytes", dataBytes.length);
+                }
+                outputStream.write(dataBytes);
                 outputStream.flush();
             } catch (SocketException e) {
-                log.warn("Socket: ", e);
+                log.error("Failed writing to socket: " + socket, e);
+                throw e;
+            } catch (IOException e) {
+                log.error("Failed writing to socket: " + socket, e);
             }
         }
     }
@@ -141,7 +153,7 @@ public class SocketDataReadWrite implements Closeable {
             opened.set(false);
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed on closing", e);
         } finally {
             isRunningLatch.countDown();
         }
