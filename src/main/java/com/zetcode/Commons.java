@@ -2,7 +2,7 @@ package com.zetcode;
 
 public interface Commons {
 
-    boolean IMMORTAL = true;
+    boolean IMMORTAL = false;
 
     int BOARD_WIDTH = 358;
     int BOARD_HEIGHT = 350;

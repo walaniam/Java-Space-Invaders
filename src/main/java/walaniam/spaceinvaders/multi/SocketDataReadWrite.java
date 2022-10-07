@@ -96,7 +96,9 @@ public class SocketDataReadWrite implements Closeable {
 
     private void notifyListener(byte[] data) {
         GameModelImpl model = serializer.deserialize(data, GameModelImpl.class);
-        remoteRead.accept(model);
+        if (model != null) {
+            remoteRead.accept(model);
+        }
     }
 
     private void writeSocket() throws IOException {
