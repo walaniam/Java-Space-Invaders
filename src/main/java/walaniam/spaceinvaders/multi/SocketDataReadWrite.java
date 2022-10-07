@@ -25,7 +25,8 @@ public class SocketDataReadWrite implements Closeable {
 
     private final AtomicBoolean opened = new AtomicBoolean();
     private final DataSerializer serializer = new DataSerializer();
-    private final CountDownLatch readWriteStartedLatch = new CountDownLatch(2);
+    private final CountDownLatch readStartedLatch = new CountDownLatch(1);
+    private final CountDownLatch writeStartedLatch = new CountDownLatch(1);
     private final CountDownLatch isRunningLatch = new CountDownLatch(1);
 
     private final Socket socket;
@@ -35,7 +36,7 @@ public class SocketDataReadWrite implements Closeable {
     public void startListening() {
 
         var readerThread = new Thread(() -> {
-            readWriteStartedLatch.countDown();
+            readStartedLatch.countDown();
             try {
                 readSocket();
             } catch (IOException e) {
@@ -45,7 +46,7 @@ public class SocketDataReadWrite implements Closeable {
         }, "game-state-reader");
 
         var writerThread = new Thread(() -> {
-            readWriteStartedLatch.countDown();
+            writeStartedLatch.countDown();
             try {
                 writeSocket();
             } catch (IOException e) {
@@ -54,11 +55,11 @@ public class SocketDataReadWrite implements Closeable {
             }
         }, "game-state-writer");
 
-        readerThread.start();
-        writerThread.start();
-
         try {
-            readWriteStartedLatch.await();
+            writerThread.start();
+            writeStartedLatch.await();
+            readerThread.start();
+            readStartedLatch.await();
             opened.set(true);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
