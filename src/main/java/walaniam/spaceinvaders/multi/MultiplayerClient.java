@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Slf4j
-public class StateExchangeClient implements Closeable {
+public class MultiplayerClient implements Closeable {
 
     private final String host;
     private final int port;
@@ -19,17 +19,11 @@ public class StateExchangeClient implements Closeable {
 
     private SocketDataReadWrite socketData;
 
-    /**
-     *
-     * @param serverAddress
-     * @param remoteRead consumes model from remote
-     * @param remoteWrite writes model to remote
-     */
-    public StateExchangeClient(String serverAddress, Consumer<GameModel> remoteRead, Supplier<GameModel> remoteWrite) {
+    public MultiplayerClient(String serverAddress, MultiplayerContext multiplayerContext) {
         this.host = serverAddress.split(":")[0];
         this.port = Integer.parseInt(serverAddress.split(":")[1]);
-        this.remoteRead = remoteRead;
-        this.remoteWrite = remoteWrite;
+        this.remoteRead = multiplayerContext.getRemoteRead();
+        this.remoteWrite = multiplayerContext.getRemoteWrite();
     }
 
     public void open() {
@@ -43,7 +37,7 @@ public class StateExchangeClient implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (socketData != null) {
             socketData.close();
         }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.multi.BlockingExchange;
+import walaniam.spaceinvaders.multi.MultiplayerContext;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -26,17 +27,16 @@ public abstract class Board extends JPanel {
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
     protected final BlockingExchange<GameModel> remoteRead;
     protected final BlockingExchange<GameModel> remoteWrite;
-    protected final AtomicReference<GameModel> modelRef = new AtomicReference<>();
+    protected final AtomicReference<GameModel> modelRef;
     private final Function<GameModel, Player> playerFunction;
     private final Timer timer;
 
-    protected Board(GameModel gameModel, Function<GameModel, Player> playerFunction,
-                    BlockingExchange<GameModel> remoteRead,
-                    BlockingExchange<GameModel> remoteWrite) {
-        this.modelRef.set(gameModel);
+    protected Board(Function<GameModel, Player> playerFunction,
+                    MultiplayerContext multiplayerContext) {
+        this.modelRef = multiplayerContext.getModelRef();
         this.playerFunction = playerFunction;
-        this.remoteRead = remoteRead;
-        this.remoteWrite = remoteWrite;
+        this.remoteRead = multiplayerContext.getRemoteRead();
+        this.remoteWrite = multiplayerContext.getRemoteWrite();
         addKeyListener(new PlayerKeyListener(modelRef, playerFunction));
         setFocusable(true);
         setBackground(Color.black);

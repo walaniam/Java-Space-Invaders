@@ -21,7 +21,8 @@ public class GameModelImpl implements GameModel {
 
     private final GameState state = new InternalState();
     private final List<Alien> aliens;
-    private final Player player;
+    @Setter
+    private Player player;
     @Setter
     private Player playerTwo;
 

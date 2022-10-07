@@ -2,50 +2,49 @@ package com.zetcode;
 
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.model.GameModel;
-import walaniam.spaceinvaders.multi.BlockingExchange;
-import walaniam.spaceinvaders.multi.StateExchangeClient;
+import walaniam.spaceinvaders.model.GameModelImpl;
+import walaniam.spaceinvaders.multi.MultiplayerClient;
+import walaniam.spaceinvaders.multi.MultiplayerContext;
 
 @Slf4j
 public class PlayerTwoBoard extends Board {
 
-    private StateExchangeClient stateExchangeClient;
+    private MultiplayerClient multiplayerClient;
 
-    public PlayerTwoBoard(GameModel gameModel,
-                          BlockingExchange<GameModel> remoteModelExchange,
-                          BlockingExchange<GameModel> localModelExchange) {
-        super(gameModel, GameModel::getPlayerTwo, remoteModelExchange, localModelExchange);
+    protected PlayerTwoBoard(MultiplayerContext context) {
+        super(GameModel::getPlayerTwo, context);
     }
 
     public static PlayerTwoBoard connectToGame(String serverAddress) {
 
-        var remoteRead = new BlockingExchange<GameModel>();
-        var remoteWrite = new BlockingExchange<GameModel>();
+        var playerContext = new MultiplayerContext();
 
-        var client = new StateExchangeClient(
-                serverAddress,
-                remoteRead,
-                remoteWrite
-        );
+        var client = new MultiplayerClient(serverAddress, playerContext);
         client.open();
 
-        var remoteModel = remoteRead.get();
+        var remoteModel = playerContext.getRemoteRead().get();
+        playerContext.getModelRef().set(remoteModel);
 
-        var board = new PlayerTwoBoard(remoteModel, remoteRead, remoteWrite);
-        board.stateExchangeClient = client;
+        var board = new PlayerTwoBoard(playerContext);
+        board.multiplayerClient = client;
 
         return board;
     }
 
     @Override
     protected void preUpdateSync() {
-//        log.info("Player two pre sync...");
-        var model = remoteRead.get();
-        modelRef.set(model);
+        log.debug("Player two pre sync...");
+        GameModel remoteModel = remoteRead.get();
+        modelRef.accumulateAndGet(remoteModel, (current, update) -> {
+            GameModelImpl remoteModelImpl = (GameModelImpl) update;
+            remoteModelImpl.setPlayerTwo(current.getPlayerTwo());
+            return remoteModelImpl;
+        });
     }
 
     @Override
     protected void postUpdateSync() {
-//        log.info("Player two post sync...");
+        log.debug("Player two post sync...");
         remoteWrite.accept(modelRef.get());
     }
 }

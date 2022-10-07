@@ -1,7 +1,6 @@
 package walaniam.spaceinvaders.multi;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.model.GameModel;
 
@@ -17,9 +16,8 @@ import java.util.function.Supplier;
 
 import static walaniam.spaceinvaders.multi.IpUtils.detectLocalHostAddress;
 
-@RequiredArgsConstructor
 @Slf4j
-public class StateExchangeServer implements Closeable {
+public class MultiplayerServer implements Closeable {
 
     private final AtomicBoolean opened = new AtomicBoolean();
     private final CountDownLatch serverListening = new CountDownLatch(1);
@@ -39,6 +37,11 @@ public class StateExchangeServer implements Closeable {
     private volatile ServerSocket serverSocket;
     @Getter
     private volatile boolean clientConnected;
+
+    public MultiplayerServer(MultiplayerContext multiplayerContext) {
+        this.remoteRead = multiplayerContext.getRemoteRead();
+        this.remoteWrite = multiplayerContext.getRemoteWrite();
+    }
 
     public void open() {
 
