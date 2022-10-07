@@ -17,8 +17,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static com.zetcode.Commons.IMMORTAL;
-
 @Slf4j
 public abstract class Board extends JPanel {
 
@@ -178,7 +176,7 @@ public abstract class Board extends JPanel {
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    if (!IMMORTAL) {
+                    if (!player.isImmortal()) {
                         player.setImage(ImageResource.EXPLOSION);
                         player.setDying(true);
                     }

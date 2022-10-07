@@ -1,9 +1,7 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
@@ -31,6 +29,8 @@ public class Player extends Sprite {
     private Shot shot;
     private Shot superShot;
     private int superShotsAvailable = 8;
+    @Getter @Setter
+    private boolean immortal;
 
     private Player(GameState state, List<Alien> aliens) {
         super(ImageResource.PLAYER);
