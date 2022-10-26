@@ -2,20 +2,37 @@ package com.zetcode;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import java.awt.EventQueue;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceInvaders extends JFrame  {
 
-    public SpaceInvaders() {
+    public SpaceInvaders(Optional<String> serverAddress) {
 
-        add(new Board());
+        final AtomicReference<Board> boardRef = new AtomicReference<>();
+        serverAddress.ifPresentOrElse(
+                remoteAddress -> {
+                    var board = PlayerTwoBoard.connectToGame(remoteAddress);
+                    boardRef.set(board);
+                    setTitle("Space Invaders - " + remoteAddress);
+                },
+                () -> {
+                    var board = PlayerOneBoard.multiPlayerBoard();
+                    boardRef.set(board);
+                    setTitle("Space Invaders");
+                }
+        );
 
-        setTitle("Space Invaders");
+        add(boardRef.get());
+
         setSize(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
+
+        boardRef.get().startGame();
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
@@ -25,7 +42,11 @@ public class SpaceInvaders extends JFrame  {
     public static void main(String[] args) {
         log.info("Starting game with params: {}", Arrays.stream(args).collect(Collectors.joining(", ")));
         EventQueue.invokeLater(() -> {
-            var frame = new SpaceInvaders();
+            String gameServerAddress = null;
+            if (args.length > 0) {
+                gameServerAddress = args[0];
+            }
+            var frame = new SpaceInvaders(Optional.ofNullable(gameServerAddress));
             frame.setVisible(true);
         });
     }

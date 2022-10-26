@@ -1,40 +1,43 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import walaniam.spaceinvaders.ImageRepository;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
-import java.awt.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@EqualsAndHashCode
 public class Shot extends Sprite {
 
     private static final int H_SPACE = 6;
     private static final int V_SPACE = 1;
 
-    private final GameState state;
-    private final List<Alien> aliens;
+    private GameState state;
+    private List<Alien> aliens;
     private int fireRangeLeftX = 0;
     private int fireRangeRightX = Commons.ALIEN_WIDTH;
     private int fireRangeY = Commons.ALIEN_HEIGHT;
 
+    private Shot(ImageResource image, GameState state, List<Alien> aliens) {
+        super(image);
+        this.state = state;
+        this.aliens = aliens;
+    }
+
     static Shot regularShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(state, aliens);
-        shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SHOT));
+        var shot = new Shot(ImageResource.SHOT, state, aliens);
         shot.setX(x + H_SPACE);
         shot.setY(y - V_SPACE);
         return shot;
     }
 
     static Shot superShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(state, aliens);
-        shot.setImage(ImageRepository.INSTANCE.getImage(ImageResource.SUPER_SHOT));
+        var shot = new Shot(ImageResource.SUPER_SHOT, state, aliens);
+        shot.setImage(ImageResource.SUPER_SHOT);
         shot.setX(x + 2);
         shot.setY(y - 12);
         shot.fireRangeLeftX = (int) Math.round(Commons.ALIEN_WIDTH * 2.5);
@@ -57,8 +60,7 @@ public class Shot extends Sprite {
                     if (x >= (alienX - fireRangeLeftX) && x <= (alienX + fireRangeRightX)
                             && y >= alienY && y <= (alienY + fireRangeY)) {
 
-                        Image explosionImg = ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION);
-                        alien.setImage(explosionImg);
+                        alien.setImage(ImageResource.EXPLOSION);
                         alien.setDying(true);
                         state.plusDeath();
                         hit.set(true);

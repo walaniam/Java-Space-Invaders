@@ -20,7 +20,7 @@ public interface Commons {
     int ALIENS_COLUMNS = 6;
     int NUMBER_OF_ALIENS_TO_DESTROY = ALIENS_ROWS * ALIENS_COLUMNS;
     int CHANCE = 5;
-    int DELAY = 17;
+    int DELAY = 17; // * 20;
     int PLAYER_WIDTH = 15;
     int PLAYER_HEIGHT = 10;
 }

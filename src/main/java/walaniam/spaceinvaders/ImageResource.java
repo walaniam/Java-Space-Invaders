@@ -14,6 +14,7 @@ public enum ImageResource {
     BOMB("/images/bomb.png"),
     EXPLOSION("/images/explosion.png"),
     PLAYER("/images/player.png"),
+    PLAYER_TWO("/images/player2.png"),
     SHOT("/images/shot.png"),
     SUPER_SHOT("/images/super_shot.png");
 

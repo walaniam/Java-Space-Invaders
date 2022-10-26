@@ -1,38 +1,48 @@
 package com.zetcode;
 
-import com.zetcode.sprite.Alien;
-import com.zetcode.sprite.Player;
-import com.zetcode.sprite.Sprite;
-import lombok.RequiredArgsConstructor;
-import walaniam.spaceinvaders.ImageRepository;
+import com.zetcode.sprite.*;
+import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameModel;
+import walaniam.spaceinvaders.multi.BlockingExchange;
+import walaniam.spaceinvaders.multi.MultiplayerContext;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
-public class Board extends JPanel {
+@Slf4j
+public abstract class Board extends JPanel {
 
-    private final GameModel model = new GameModel();
+    protected String gameEndMessage = "Game Over";
+
     private final Dimension dimension = new Dimension(Commons.BOARD_WIDTH, Commons.BOARD_HEIGHT);
+    protected final BlockingExchange<GameModel> remoteRead;
+    protected final BlockingExchange<GameModel> remoteWrite;
+    protected final AtomicReference<GameModel> modelRef;
+    private final Function<GameModel, Player> playerFunction;
     private final Timer timer;
 
-    private int direction = -1;
-    private String message = "Game Over";
-
-    public Board() {
-        addKeyListener(new PlayerKeyListener(model.getPlayer()));
+    protected Board(Function<GameModel, Player> playerFunction,
+                    MultiplayerContext multiplayerContext) {
+        this.modelRef = multiplayerContext.getModelRef();
+        this.playerFunction = playerFunction;
+        this.remoteRead = multiplayerContext.getRemoteRead();
+        this.remoteWrite = multiplayerContext.getRemoteWrite();
+        addKeyListener(new PlayerKeyListener(modelRef, playerFunction));
         setFocusable(true);
         setBackground(Color.black);
-
         this.timer = new Timer(Commons.DELAY, new GameCycle());
-        this.timer.start();
+    }
+
+    public void startGame() {
+        timer.start();
     }
 
     @Override
@@ -43,6 +53,8 @@ public class Board extends JPanel {
 
     private void doDrawing(Graphics g) {
 
+        var model = modelRef.get();
+
         g.setColor(Color.black);
         g.fillRect(0, 0, dimension.width, dimension.height);
         g.setColor(Color.green);
@@ -50,7 +62,6 @@ public class Board extends JPanel {
         if (model.isInGame()) {
             g.drawLine(0, Commons.GROUND, Commons.BOARD_WIDTH, Commons.GROUND);
             model.drawAll(g, this);
-            printState(g);
         } else {
             if (timer.isRunning()) {
                 timer.stop();
@@ -59,10 +70,6 @@ public class Board extends JPanel {
         }
 
         Toolkit.getDefaultToolkit().sync();
-    }
-
-    private void printState(Graphics g) {
-        // TODO
     }
 
     private void gameOver(Graphics g) {
@@ -80,19 +87,21 @@ public class Board extends JPanel {
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(message, (Commons.BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
+        g.drawString(gameEndMessage, (Commons.BOARD_WIDTH - fontMetrics.stringWidth(gameEndMessage)) / 2,
                 Commons.BOARD_WIDTH / 2);
     }
 
-    private void update() {
+    private void updateModel() {
+
+        var model = modelRef.get();
+        var player = playerFunction.apply(model);
 
         if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
             model.setInGame(false);
             timer.stop();
-            message = "Game won!";
+            gameEndMessage = "Game won!";
         }
 
-        var player = model.getPlayer();
         var aliens = model.getAliens();
 
         // player
@@ -107,9 +116,9 @@ public class Board extends JPanel {
 
             int x = alien.getX();
 
-            if (x >= Commons.BOARD_WIDTH - Commons.BORDER_RIGHT && direction != -1) {
+            if (x >= Commons.BOARD_WIDTH - Commons.BORDER_RIGHT && model.getAlienDirection() != Direction.LEFT) {
 
-                direction = -1;
+                model.setAlienDirection(Direction.LEFT);
 
                 Iterator<Alien> i1 = aliens.iterator();
                 while (i1.hasNext()) {
@@ -118,9 +127,9 @@ public class Board extends JPanel {
                 }
             }
 
-            if (x <= Commons.BORDER_LEFT && direction != 1) {
+            if (x <= Commons.BORDER_LEFT && model.getAlienDirection() != Direction.RIGHT) {
 
-                direction = 1;
+                model.setAlienDirection(Direction.RIGHT);
 
                 Iterator<Alien> i2 = aliens.iterator();
                 while (i2.hasNext()) {
@@ -136,9 +145,9 @@ public class Board extends JPanel {
                     int y = alien.getY();
                     if (y > Commons.GROUND - Commons.ALIEN_HEIGHT) {
                         model.setInGame(false);
-                        message = "Invasion!";
+                        gameEndMessage = "Invasion!";
                     }
-                    alien.act(direction);
+                    alien.act(model.getAlienDirection());
                 });
 
         // bombs
@@ -147,7 +156,7 @@ public class Board extends JPanel {
         for (Alien alien : aliens) {
 
             int shot = generator.nextInt(15);
-            Alien.Bomb bomb = alien.getBomb();
+            Bomb bomb = alien.getBomb();
 
             if (shot == Commons.CHANCE && alien.isVisible() && !bomb.isVisible()) {
                 bomb.setVisible(true);
@@ -167,8 +176,11 @@ public class Board extends JPanel {
                         && bombY >= (playerY)
                         && bombY <= (playerY + Commons.PLAYER_HEIGHT)) {
 
-                    player.setImage(ImageRepository.INSTANCE.getImage(ImageResource.EXPLOSION));
-                    player.setDying(true);
+                    if (!player.isImmortal()) {
+                        player.setImage(ImageResource.EXPLOSION);
+                        player.setDying(true);
+                    }
+
                     bomb.die();
                 }
             }
@@ -182,27 +194,18 @@ public class Board extends JPanel {
         }
     }
 
+    protected abstract void preUpdateSync();
+
+    protected abstract void postUpdateSync();
+
     private class GameCycle implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            update();
+            preUpdateSync();
+            updateModel();
+            postUpdateSync();
             Board.this.repaint();
         }
     }
 
-    @RequiredArgsConstructor
-    private class PlayerKeyListener extends KeyAdapter {
-
-        private final Player player;
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            player.keyReleased(e);
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            player.keyPressed(e);
-        }
-    }
 }

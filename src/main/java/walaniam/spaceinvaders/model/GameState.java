@@ -6,4 +6,8 @@ public interface GameState {
     boolean isInGame();
     int getDeaths();
     void plusDeath();
+
+    void setAlienDirection(int direction);
+
+    int getAlienDirection();
 }

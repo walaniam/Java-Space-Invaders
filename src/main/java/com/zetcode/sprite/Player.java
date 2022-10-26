@@ -1,37 +1,56 @@
 package com.zetcode.sprite;
 
 import com.zetcode.Commons;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameState;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
 import java.util.List;
 
+@NoArgsConstructor
 @Slf4j
+@EqualsAndHashCode
+@ToString(callSuper = true)
 public class Player extends Sprite {
 
     private static final int START_X = 270;
     private static final int START_Y = 280;
 
-    private final GameState state;
-    private final List<Alien> aliens;
-    private final int width;
+    private GameState state;
+    @ToString.Exclude
+    private List<Alien> aliens;
+    private int width;
     private Shot shot;
     private Shot superShot;
     private int superShotsAvailable = 8;
+    @Getter @Setter
+    private boolean immortal;
 
-    public Player(GameState state, List<Alien> aliens) {
+    private Player(GameState state, List<Alien> aliens) {
+        super(ImageResource.PLAYER);
         this.state = state;
         this.aliens = aliens;
-        Image playerImage = ImageRepository.INSTANCE.getImage(ImageResource.PLAYER);
+        Image playerImage = ImageRepository.INSTANCE.getImage(getImage());
         this.width = playerImage.getWidth(null);
-        setImage(playerImage);
-        setX(START_X);
-        setY(START_Y);
+        this.x = START_X;
+        this.y = START_Y;
+    }
+
+    public static Player playerOne(GameState state, List<Alien> aliens) {
+        return new Player(state, aliens);
+    }
+
+    public static Player playerTwo(GameState state, List<Alien> aliens) {
+        var player = new Player(state, aliens);
+        player.setImage(ImageResource.PLAYER_TWO);
+        player.x = START_X + 25;
+        return player;
     }
 
     @Override
@@ -71,6 +90,7 @@ public class Player extends Sprite {
     }
 
     public void keyPressed(KeyEvent e) {
+//        log.info("Key pressed {}", e);
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;
