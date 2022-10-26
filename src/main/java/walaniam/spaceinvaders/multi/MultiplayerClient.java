@@ -29,7 +29,7 @@ public class MultiplayerClient implements Closeable {
     public void open() {
         try {
             var socket = new Socket(host, port);
-            socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
+            socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite, false);
             socketData.startListening();
         } catch (IOException e) {
             throw new RuntimeException(e);

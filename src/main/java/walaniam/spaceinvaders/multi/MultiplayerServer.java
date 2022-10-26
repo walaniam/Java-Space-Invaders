@@ -80,7 +80,7 @@ public class MultiplayerServer implements Closeable {
             try (Socket socket = serverSocket.accept()) {
                 log.info("Connected {}", socket);
                 log.info("remoteWrite: {}", remoteWrite);
-                socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite);
+                socketData = new SocketDataReadWrite(socket, remoteRead, remoteWrite, true);
                 socketData.startListening();
                 clientConnected = true;
                 socketData.awaitTillRunning();

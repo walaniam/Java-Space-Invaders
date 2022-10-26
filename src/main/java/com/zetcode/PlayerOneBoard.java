@@ -36,15 +36,15 @@ public class PlayerOneBoard extends Board {
 
     @Override
     protected void preUpdateSync() {
-        log.debug("Player one pre sync...");
+        log.trace("Player one pre sync...");
         remoteWrite.accept(modelRef.get());
     }
 
     @Override
     protected void postUpdateSync() {
-        log.debug("Player one post sync...");
+        log.trace("Player one post sync...");
         if (multiplayerServer.isClientConnected()) {
-            GameModel remoteModel = remoteRead.get(2, TimeUnit.SECONDS);
+            GameModel remoteModel = remoteRead.get(50, TimeUnit.MILLISECONDS);
             if (remoteModel != null) {
                 modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
                     Player playerTwo = remote.getPlayerTwo();
@@ -53,7 +53,7 @@ public class PlayerOneBoard extends Board {
                     return current;
                 });
             } else {
-                log.info("Remote model was null");
+                log.debug("Remote model was null");
             }
         }
     }
