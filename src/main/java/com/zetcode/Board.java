@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -93,8 +94,8 @@ public abstract class Board extends JPanel {
 
     private void updateModel() {
 
-        var model = modelRef.get();
-        var player = playerFunction.apply(model);
+        GameModel model = modelRef.get();
+        Player player = playerFunction.apply(model);
 
         if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
             model.setInGame(false);
@@ -102,7 +103,7 @@ public abstract class Board extends JPanel {
             gameEndMessage = "Game won!";
         }
 
-        var aliens = model.getAliens();
+        List<Alien> aliens = model.getAliens();
 
         // player
         player.act();

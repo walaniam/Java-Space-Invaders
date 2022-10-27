@@ -6,7 +6,6 @@ import com.zetcode.sprite.Player;
 import com.zetcode.sprite.Sprite;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
@@ -21,9 +20,7 @@ public class GameModelImpl implements GameModel {
 
     private final GameState state = new InternalState();
     private final List<Alien> aliens;
-    @Setter
     private Player player;
-    @Setter
     private Player playerTwo;
 
     public GameModelImpl() {
@@ -32,11 +29,17 @@ public class GameModelImpl implements GameModel {
         this.playerTwo = Player.playerTwo(state, aliens);
     }
 
+    @Override
     public void drawAll(Graphics g, ImageObserver observer) {
         aliens.forEach(alien -> alien.draw(g, observer));
         player.draw(g, observer);
         playerTwo.draw(g, observer);
         drawBombing(g, observer);
+    }
+
+    @Override
+    public void mergeWith(GameModel other) {
+        this.playerTwo = other.getPlayerTwo();
     }
 
     private void drawBombing(Graphics g, ImageObserver observer) {

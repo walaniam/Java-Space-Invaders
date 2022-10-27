@@ -28,7 +28,7 @@ public class Player extends Sprite {
     private int width;
     private Shot shot;
     private Shot superShot;
-    private int superShotsAvailable = 8;
+    private int superShotsAvailable = 5;
     @Getter @Setter
     private boolean immortal;
 
@@ -90,7 +90,7 @@ public class Player extends Sprite {
     }
 
     public void keyPressed(KeyEvent e) {
-//        log.info("Key pressed {}", e);
+        log.debug("Key pressed {}", e);
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;

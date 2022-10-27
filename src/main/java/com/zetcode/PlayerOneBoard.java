@@ -1,6 +1,5 @@
 package com.zetcode;
 
-import com.zetcode.sprite.Player;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.model.GameModelImpl;
@@ -47,9 +46,7 @@ public class PlayerOneBoard extends Board {
             GameModel remoteModel = remoteRead.get(50, TimeUnit.MILLISECONDS);
             if (remoteModel != null) {
                 modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
-                    Player playerTwo = remote.getPlayerTwo();
-                    log.debug("Player two: {}", playerTwo);
-                    current.setPlayerTwo(playerTwo);
+                    current.mergeWith(remote);
                     return current;
                 });
             } else {
