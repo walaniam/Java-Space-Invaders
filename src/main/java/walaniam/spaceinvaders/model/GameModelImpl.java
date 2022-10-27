@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static com.zetcode.Commons.*;
 
@@ -20,13 +21,13 @@ public class GameModelImpl implements GameModel {
 
     private final GameState state = new InternalState();
     private final List<Alien> aliens;
-    private Player player;
+    private final Player player;
     private Player playerTwo;
 
     public GameModelImpl() {
         this.aliens = newAliens();
-        this.player = Player.playerOne(state, aliens);
-        this.playerTwo = Player.playerTwo(state, aliens);
+        this.player = Player.playerOne(state);
+        this.playerTwo = Player.playerTwo(state);
     }
 
     @Override
@@ -40,6 +41,11 @@ public class GameModelImpl implements GameModel {
     @Override
     public void mergeWith(GameModel other) {
         this.playerTwo = other.getPlayerTwo();
+        IntStream.range(0, NUMBER_OF_ALIENS_TO_DESTROY).forEach(i -> {
+            if (other.getAliens().get(i).isDying()) {
+                aliens.get(i).setDying(true);
+            }
+        });
     }
 
     private void drawBombing(Graphics g, ImageObserver observer) {

@@ -109,7 +109,7 @@ public abstract class Board extends JPanel {
         player.act();
 
         // shot
-        player.update();
+        player.update(model);
 
         // aliens
 

@@ -5,13 +5,13 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.model.GameState;
 
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
-import java.util.List;
 
 @NoArgsConstructor
 @Slf4j
@@ -23,8 +23,6 @@ public class Player extends Sprite {
     private static final int START_Y = 280;
 
     private GameState state;
-    @ToString.Exclude
-    private List<Alien> aliens;
     private int width;
     private Shot shot;
     private Shot superShot;
@@ -32,22 +30,21 @@ public class Player extends Sprite {
     @Getter @Setter
     private boolean immortal;
 
-    private Player(GameState state, List<Alien> aliens) {
+    private Player(GameState state) {
         super(ImageResource.PLAYER);
         this.state = state;
-        this.aliens = aliens;
         Image playerImage = ImageRepository.INSTANCE.getImage(getImage());
         this.width = playerImage.getWidth(null);
         this.x = START_X;
         this.y = START_Y;
     }
 
-    public static Player playerOne(GameState state, List<Alien> aliens) {
-        return new Player(state, aliens);
+    public static Player playerOne(GameState state) {
+        return new Player(state);
     }
 
-    public static Player playerTwo(GameState state, List<Alien> aliens) {
-        var player = new Player(state, aliens);
+    public static Player playerTwo(GameState state) {
+        var player = new Player(state);
         player.setImage(ImageResource.PLAYER_TWO);
         player.x = START_X + 25;
         return player;
@@ -70,12 +67,12 @@ public class Player extends Sprite {
     }
 
     @Override
-    public void update() {
+    public void update(GameModel model) {
         if (shot != null) {
-            shot.update();
+            shot.update(model);
         }
         if (superShot != null) {
-            superShot.update();
+            superShot.update(model);
         }
     }
 
@@ -109,14 +106,14 @@ public class Player extends Sprite {
 
     private void shotFired() {
         if (state.isInGame() && (shot == null || !shot.isVisible())) {
-            shot = Shot.regularShot(state, aliens, x, y);
+            shot = Shot.regularShot(state, x, y);
         }
     }
 
     private void superShotFired() {
         if (state.isInGame() && (superShot == null || !superShot.isVisible() && superShotsAvailable > 0)) {
             superShotsAvailable--;
-            superShot = Shot.superShot(state, aliens, x, y);
+            superShot = Shot.superShot(state, x, y);
         }
     }
 }

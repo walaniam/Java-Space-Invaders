@@ -4,6 +4,7 @@ import com.zetcode.Commons;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.model.GameState;
 
 import java.util.List;
@@ -17,26 +18,24 @@ public class Shot extends Sprite {
     private static final int V_SPACE = 1;
 
     private GameState state;
-    private List<Alien> aliens;
     private int fireRangeLeftX = 0;
     private int fireRangeRightX = Commons.ALIEN_WIDTH;
     private int fireRangeY = Commons.ALIEN_HEIGHT;
 
-    private Shot(ImageResource image, GameState state, List<Alien> aliens) {
+    private Shot(ImageResource image, GameState state) {
         super(image);
         this.state = state;
-        this.aliens = aliens;
     }
 
-    static Shot regularShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(ImageResource.SHOT, state, aliens);
+    static Shot regularShot(GameState state, int x, int y) {
+        var shot = new Shot(ImageResource.SHOT, state);
         shot.setX(x + H_SPACE);
         shot.setY(y - V_SPACE);
         return shot;
     }
 
-    static Shot superShot(GameState state, List<Alien> aliens, int x, int y) {
-        var shot = new Shot(ImageResource.SUPER_SHOT, state, aliens);
+    static Shot superShot(GameState state, int x, int y) {
+        var shot = new Shot(ImageResource.SUPER_SHOT, state);
         shot.setImage(ImageResource.SUPER_SHOT);
         shot.setX(x + 2);
         shot.setY(y - 12);
@@ -45,12 +44,14 @@ public class Shot extends Sprite {
         return shot;
     }
 
-    public void update() {
+    @Override
+    public void update(GameModel model) {
 
         if (!isVisible()) {
             return;
         }
 
+        List<Alien> aliens = model.getAliens();
         var hit = new AtomicBoolean();
         aliens.stream()
                 .filter(alien -> alien.isVisible() && isVisible())
