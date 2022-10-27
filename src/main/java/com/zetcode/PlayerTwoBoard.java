@@ -27,7 +27,7 @@ public class PlayerTwoBoard extends Board {
         client.open();
 
         var remoteModel = playerContext.getRemoteRead().get();
-        remoteModel.getPlayerTwo().setImmortal(true);
+//        remoteModel.getPlayerTwo().setImmortal(true);
         playerContext.getModelRef().set(remoteModel);
 
         var board = new PlayerTwoBoard(playerContext);

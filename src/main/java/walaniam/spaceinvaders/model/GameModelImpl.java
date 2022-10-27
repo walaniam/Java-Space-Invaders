@@ -46,6 +46,9 @@ public class GameModelImpl implements GameModel {
                 aliens.get(i).setDying(true);
             }
         });
+        if (!other.isInGame()) {
+            setInGame(false);
+        }
     }
 
     private void drawBombing(Graphics g, ImageObserver observer) {

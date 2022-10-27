@@ -53,7 +53,7 @@ public class Player extends Sprite {
     @Override
     public void draw(Graphics g, ImageObserver observer) {
         super.draw(g, observer);
-        if (isDying()) {
+        if (isVisible() && isDying()) {
             log.info("Player dying");
             die();
             state.setInGame(false);
