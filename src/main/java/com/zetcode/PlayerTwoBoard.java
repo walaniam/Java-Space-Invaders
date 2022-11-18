@@ -2,10 +2,10 @@ package com.zetcode;
 
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.model.GameModel;
-import walaniam.spaceinvaders.model.GameModelImpl;
 import walaniam.spaceinvaders.multi.MultiplayerClient;
 import walaniam.spaceinvaders.multi.MultiplayerContext;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -27,7 +27,7 @@ public class PlayerTwoBoard extends Board {
         client.open();
 
         var remoteModel = playerContext.getRemoteRead().get();
-        remoteModel.getPlayerTwo().setImmortal(true);
+//        remoteModel.getPlayerTwo().setImmortal(true);
         playerContext.getModelRef().set(remoteModel);
 
         var board = new PlayerTwoBoard(playerContext);
@@ -43,10 +43,9 @@ public class PlayerTwoBoard extends Board {
         log.trace("Player two pre sync...");
         GameModel remoteModel = remoteRead.get(50, TimeUnit.MILLISECONDS);
         if (remoteModel != null) {
-            modelRef.accumulateAndGet(remoteModel, (current, update) -> {
-                GameModelImpl remoteModelImpl = (GameModelImpl) update;
-                remoteModelImpl.setPlayerTwo(current.getPlayerTwo());
-                return remoteModelImpl;
+            modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
+                remote.mergeWith(current);
+                return remote;
             });
         } else {
             log.info("Remote model was null");
@@ -56,9 +55,7 @@ public class PlayerTwoBoard extends Board {
     @Override
     protected void postUpdateSync() {
         log.trace("Player two post sync...");
-        if (modelRef.get() == null) {
-            throw new IllegalArgumentException();
-        }
-        remoteWrite.accept(modelRef.get());
+        GameModel model = Optional.ofNullable(modelRef.get()).orElseThrow();
+        remoteWrite.accept(model);
     }
 }

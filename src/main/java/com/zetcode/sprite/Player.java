@@ -5,13 +5,13 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameModel;
 import walaniam.spaceinvaders.model.GameState;
 
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.image.ImageObserver;
-import java.util.List;
 
 @NoArgsConstructor
 @Slf4j
@@ -23,31 +23,32 @@ public class Player extends Sprite {
     private static final int START_Y = 280;
 
     private GameState state;
-    @ToString.Exclude
-    private List<Alien> aliens;
+    @Getter
+    private PlayerDescriptor descriptor;
     private int width;
     private Shot shot;
     private Shot superShot;
-    private int superShotsAvailable = 8;
+    private int superShotsAvailable = 5;
     @Getter @Setter
     private boolean immortal;
 
-    private Player(GameState state, List<Alien> aliens) {
+    private Player(GameState state, PlayerDescriptor descriptor) {
         super(ImageResource.PLAYER);
         this.state = state;
-        this.aliens = aliens;
         Image playerImage = ImageRepository.INSTANCE.getImage(getImage());
         this.width = playerImage.getWidth(null);
         this.x = START_X;
         this.y = START_Y;
+        this.descriptor = descriptor;
+        state.getPlayers().add(descriptor);
     }
 
-    public static Player playerOne(GameState state, List<Alien> aliens) {
-        return new Player(state, aliens);
+    public static Player playerOne(GameState state) {
+        return new Player(state, PlayerDescriptor.ONE);
     }
 
-    public static Player playerTwo(GameState state, List<Alien> aliens) {
-        var player = new Player(state, aliens);
+    public static Player playerTwo(GameState state) {
+        var player = new Player(state, PlayerDescriptor.TWO);
         player.setImage(ImageResource.PLAYER_TWO);
         player.x = START_X + 25;
         return player;
@@ -56,10 +57,9 @@ public class Player extends Sprite {
     @Override
     public void draw(Graphics g, ImageObserver observer) {
         super.draw(g, observer);
-        if (isDying()) {
-            log.info("Player dying");
+        if (isVisible() && isDying()) {
+            log.info("Player {} dying", descriptor);
             die();
-            state.setInGame(false);
         }
         if (shot != null) {
             shot.draw(g, observer);
@@ -70,12 +70,18 @@ public class Player extends Sprite {
     }
 
     @Override
-    public void update() {
+    public void die() {
+        super.die();
+        state.getPlayers().remove(descriptor);
+    }
+
+    @Override
+    public void update(GameModel model) {
         if (shot != null) {
-            shot.update();
+            shot.update(model);
         }
         if (superShot != null) {
-            superShot.update();
+            superShot.update(model);
         }
     }
 
@@ -90,7 +96,7 @@ public class Player extends Sprite {
     }
 
     public void keyPressed(KeyEvent e) {
-//        log.info("Key pressed {}", e);
+        log.debug("Key pressed {}", e);
         int key = e.getKeyCode();
         switch (key) {
             case KeyEvent.VK_LEFT -> dx = -2;
@@ -109,14 +115,14 @@ public class Player extends Sprite {
 
     private void shotFired() {
         if (state.isInGame() && (shot == null || !shot.isVisible())) {
-            shot = Shot.regularShot(state, aliens, x, y);
+            shot = Shot.regularShot(state, x, y);
         }
     }
 
     private void superShotFired() {
         if (state.isInGame() && (superShot == null || !superShot.isVisible() && superShotsAvailable > 0)) {
             superShotsAvailable--;
-            superShot = Shot.superShot(state, aliens, x, y);
+            superShot = Shot.superShot(state, x, y);
         }
     }
 }

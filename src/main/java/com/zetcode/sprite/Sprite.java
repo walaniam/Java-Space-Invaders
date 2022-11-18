@@ -3,6 +3,7 @@ package com.zetcode.sprite;
 import lombok.*;
 import walaniam.spaceinvaders.ImageRepository;
 import walaniam.spaceinvaders.ImageResource;
+import walaniam.spaceinvaders.model.GameModel;
 
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
@@ -42,6 +43,6 @@ public abstract class Sprite {
         }
     }
 
-    public void update() {
+    public void update(GameModel model) {
     }
 }
