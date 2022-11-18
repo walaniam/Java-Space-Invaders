@@ -4,6 +4,7 @@ import com.zetcode.sprite.*;
 import lombok.extern.slf4j.Slf4j;
 import walaniam.spaceinvaders.ImageResource;
 import walaniam.spaceinvaders.model.GameModel;
+import walaniam.spaceinvaders.model.GameState;
 import walaniam.spaceinvaders.multi.BlockingExchange;
 import walaniam.spaceinvaders.multi.MultiplayerContext;
 
@@ -98,9 +99,12 @@ public abstract class Board extends JPanel {
         Player player = playerFunction.apply(model);
 
         if (model.getDeaths() == Commons.NUMBER_OF_ALIENS_TO_DESTROY) {
-            model.setInGame(false);
+            model.gameEnd(GameState.GameEndCause.WIN);
             timer.stop();
             gameEndMessage = "Game won!";
+        } else {
+            // TODO
+//            System.out.println(Commons.NUMBER_OF_ALIENS_TO_DESTROY + ", deaths " + model.getDeaths());
         }
 
         List<Alien> aliens = model.getAliens();
@@ -145,7 +149,7 @@ public abstract class Board extends JPanel {
                 .forEach(alien -> {
                     int y = alien.getY();
                     if (y > Commons.GROUND - Commons.ALIEN_HEIGHT) {
-                        model.setInGame(false);
+                        model.gameEnd(GameState.GameEndCause.INVASION);
                         gameEndMessage = "Invasion!";
                     }
                     alien.act(model.getAlienDirection());

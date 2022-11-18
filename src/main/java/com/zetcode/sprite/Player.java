@@ -23,6 +23,8 @@ public class Player extends Sprite {
     private static final int START_Y = 280;
 
     private GameState state;
+    @Getter
+    private PlayerDescriptor descriptor;
     private int width;
     private Shot shot;
     private Shot superShot;
@@ -30,21 +32,23 @@ public class Player extends Sprite {
     @Getter @Setter
     private boolean immortal;
 
-    private Player(GameState state) {
+    private Player(GameState state, PlayerDescriptor descriptor) {
         super(ImageResource.PLAYER);
         this.state = state;
         Image playerImage = ImageRepository.INSTANCE.getImage(getImage());
         this.width = playerImage.getWidth(null);
         this.x = START_X;
         this.y = START_Y;
+        this.descriptor = descriptor;
+        state.getPlayers().add(descriptor);
     }
 
     public static Player playerOne(GameState state) {
-        return new Player(state);
+        return new Player(state, PlayerDescriptor.ONE);
     }
 
     public static Player playerTwo(GameState state) {
-        var player = new Player(state);
+        var player = new Player(state, PlayerDescriptor.TWO);
         player.setImage(ImageResource.PLAYER_TWO);
         player.x = START_X + 25;
         return player;
@@ -54,9 +58,8 @@ public class Player extends Sprite {
     public void draw(Graphics g, ImageObserver observer) {
         super.draw(g, observer);
         if (isVisible() && isDying()) {
-            log.info("Player dying");
+            log.info("Player {} dying", descriptor);
             die();
-            state.setInGame(false);
         }
         if (shot != null) {
             shot.draw(g, observer);
@@ -64,6 +67,12 @@ public class Player extends Sprite {
         if (superShot != null) {
             superShot.draw(g, observer);
         }
+    }
+
+    @Override
+    public void die() {
+        super.die();
+        state.getPlayers().remove(descriptor);
     }
 
     @Override

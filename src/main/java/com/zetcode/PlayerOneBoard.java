@@ -43,7 +43,7 @@ public class PlayerOneBoard extends Board {
     protected void postUpdateSync() {
         log.trace("Player one post sync...");
         if (multiplayerServer.isClientConnected()) {
-            GameModel remoteModel = remoteRead.get(50, TimeUnit.MILLISECONDS);
+            GameModel remoteModel = remoteRead.get(200, TimeUnit.MILLISECONDS);
             if (remoteModel != null) {
                 modelRef.accumulateAndGet(remoteModel, (current, remote) -> {
                     current.mergeWith(remote);
