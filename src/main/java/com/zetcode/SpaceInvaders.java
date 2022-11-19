@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.JFrame;
 import java.awt.EventQueue;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class SpaceInvaders extends JFrame  {
@@ -40,7 +38,7 @@ public class SpaceInvaders extends JFrame  {
     }
 
     public static void main(String[] args) {
-        log.info("Starting game with params: {}", Arrays.stream(args).collect(Collectors.joining(", ")));
+        log.info("Starting game with params: {}", String.join(",", args));
         EventQueue.invokeLater(() -> {
             String gameServerAddress = null;
             if (args.length > 0) {

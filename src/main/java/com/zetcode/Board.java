@@ -125,9 +125,7 @@ public abstract class Board extends JPanel {
 
                 model.setAlienDirection(Direction.LEFT);
 
-                Iterator<Alien> i1 = aliens.iterator();
-                while (i1.hasNext()) {
-                    Alien a2 = i1.next();
+                for (Alien a2 : aliens) {
                     a2.setY(a2.getY() + Commons.GO_DOWN);
                 }
             }
@@ -136,9 +134,7 @@ public abstract class Board extends JPanel {
 
                 model.setAlienDirection(Direction.RIGHT);
 
-                Iterator<Alien> i2 = aliens.iterator();
-                while (i2.hasNext()) {
-                    Alien a = i2.next();
+                for (Alien a : aliens) {
                     a.setY(a.getY() + Commons.GO_DOWN);
                 }
             }

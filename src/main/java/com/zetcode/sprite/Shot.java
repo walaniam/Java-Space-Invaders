@@ -20,7 +20,7 @@ public class Shot extends Sprite {
     private GameState state;
     private int fireRangeLeftX = 0;
     private int fireRangeRightX = Commons.ALIEN_WIDTH;
-    private int fireRangeY = Commons.ALIEN_HEIGHT;
+    private final int fireRangeY = Commons.ALIEN_HEIGHT;
 
     private Shot(ImageResource image, GameState state) {
         super(image);
