@@ -13,10 +13,6 @@ public interface GameState {
 
     Set<PlayerDescriptor> getPlayers();
 
-    int getDeaths();
-
-    void plusDeath();
-
     void gameEnd(GameEndCause cause);
 
     Optional<GameEndCause> getGameEndCause();

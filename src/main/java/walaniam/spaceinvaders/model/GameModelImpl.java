@@ -43,11 +43,11 @@ public class GameModelImpl implements GameModel {
 
     @Override
     public void mergeWith(GameModel other) {
-        // TODO calculate player two shots
         this.playerTwo = other.getPlayerTwo();
         IntStream.range(0, NUMBER_OF_ALIENS_TO_DESTROY).forEach(i -> {
-            if (other.getAliens().get(i).isDying()) {
-                aliens.get(i).setDying(true);
+            Alien otherAlien = other.getAliens().get(i);
+            if (otherAlien.isDying() || !otherAlien.isVisible()) {
+                aliens.get(i).die();
             }
         });
         other.getGameEndCause().ifPresent(this::gameEnd);
@@ -78,16 +78,6 @@ public class GameModelImpl implements GameModel {
             }
         }
         return aliens;
-    }
-
-    @Override
-    public int getDeaths() {
-        return state.getDeaths();
-    }
-
-    @Override
-    public void plusDeath() {
-        state.plusDeath();
     }
 
     @Override
