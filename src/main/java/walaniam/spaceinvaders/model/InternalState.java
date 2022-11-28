@@ -17,11 +17,6 @@ public class InternalState implements GameState {
     private GameEndCause gameEndCause;
 
     @Override
-    public void plusDeath() {
-        deaths++;
-    }
-
-    @Override
     public void gameEnd(GameEndCause cause) {
         this.gameEndCause = cause;
     }

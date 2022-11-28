@@ -17,4 +17,10 @@ public interface GameModel extends GameState {
     void drawAll(Graphics g, ImageObserver observer);
 
     List<Alien> getAliens();
+
+    default int getDeaths() {
+        return (int) getAliens().stream()
+                .filter(it -> it.isDying() || !it.isVisible())
+                .count();
+    }
 }

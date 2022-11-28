@@ -63,7 +63,6 @@ public class Shot extends Sprite {
 
                         alien.setImage(ImageResource.EXPLOSION);
                         alien.setDying(true);
-                        state.plusDeath();
                         hit.set(true);
                     }
                 });
